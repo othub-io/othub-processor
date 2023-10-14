@@ -1,0 +1,11 @@
+[Unit]
+Description=othub.io create n transfer processor
+
+[Service]
+Type=simple
+WorkingDirectory=/root/othub-processor
+ExecStart=/root/othub-runtime/othub-processor.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
