@@ -76,7 +76,7 @@ async function uploadData(data) {
     );
 
     if (data.network === "otp::testnet") {
-      const dkg_create_result = await testnet_dkg.asset
+      dkg_create_result = await testnet_dkg.asset
         .create(
           {
             public: dkg_txn_data,
@@ -117,13 +117,13 @@ async function uploadData(data) {
             );
           }
 
-      if (dkg_create_result.UAL) {
+      if (dkg_create_result.UAL !== '') {
         console.log(
           `Created UAL ${dkg_create_result.UAL} with ${wallet_array[index].name} wallet ${wallet_array[index].public_key}.`
         );
         console.log(`Transfering to ${data.receiver}...`);
 
-         await testnet_dkg.asset
+        dkg_transfer_result = await testnet_dkg.asset
           .transfer(dkg_create_result.UAL, data.receiver, {
             epochsNum: data.epochs,
             maxNumberOfRetries: 30,
