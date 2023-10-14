@@ -115,6 +115,7 @@ async function uploadData(data) {
                 if (error) throw error;
               }
             );
+            return;
           }
 
       if (dkg_create_result.UAL !== '') {
@@ -171,6 +172,7 @@ async function uploadData(data) {
                 if (error) throw error;
               }
             );
+            return;
           });
       }
     }
