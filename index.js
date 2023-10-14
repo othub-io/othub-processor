@@ -100,83 +100,75 @@ async function uploadData(data) {
         })
         .catch(async (error) => {
           console.log(error);
-          console.log(`Create for Create n Transfer request failed. Setting back to pending...`);
-            query = `UPDATE txn_header SET progress = ? WHERE  txn_id = ?`;
-            await othubdb_connection.query(
-              query,
-              [
-                "PENDING",
-                data.txn_id
-              ],
-              function (error, results, fields) {
-                if (error) throw error;
-              }
-            );
-            return;
+          console.log(
+            `Create for Create n Transfer request failed. Setting back to pending...`
+          );
+          query = `UPDATE txn_header SET progress = ? WHERE  txn_id = ?`;
+          await othubdb_connection.query(
+            query,
+            ["PENDING", data.txn_id],
+            function (error, results, fields) {
+              if (error) throw error;
+            }
+          );
+          return;
         });
 
-        console.log('CREATE RESULT: '+ JSON.stringify(dkg_create_result))
+      console.log(
+        `Created UAL ${dkg_create_result.UAL} with ${wallet_array[index].name} wallet ${wallet_array[index].public_key}.`
+      );
+      console.log(`Transfering to ${data.receiver}...`);
 
-      if (dkg_create_result !== '') {
-        console.log(
-          `Created UAL ${dkg_create_result.UAL} with ${wallet_array[index].name} wallet ${wallet_array[index].public_key}.`
-        );
-        console.log(`Transfering to ${data.receiver}...`);
+      await testnet_dkg.asset
+        .transfer(dkg_create_result.UAL, data.receiver, {
+          epochsNum: data.epochs,
+          maxNumberOfRetries: 30,
+          frequency: 2,
+          contentType: "all",
+          keywords: data.keywords,
+          blockchain: {
+            name: data.network,
+            publicKey: data.approver,
+            privateKey: wallet_array[index].private_key,
+          },
+        })
+        .then(async (result) => {
+          console.log(
+            `Transfered ${dkg_create_result.UAL} to ${data.receiver} with ${wallet_array[index].name} wallet ${wallet_array[index].public_key}.`
+          );
 
-         await testnet_dkg.asset
-          .transfer(dkg_create_result.UAL, data.receiver, {
-            epochsNum: data.epochs,
-            maxNumberOfRetries: 30,
-            frequency: 2,
-            contentType: "all",
-            keywords: data.keywords,
-            blockchain: {
-              name: data.network,
-              publicKey: data.approver,
-              privateKey: wallet_array[index].private_key,
-            },
-          })
-          .then(async (result) => {
-            console.log(
-              `Transfered ${dkg_create_result.UAL} to ${data.receiver} with ${wallet_array[index].name} wallet ${wallet_array[index].public_key}.`
-            );
+          query = `UPDATE txn_header SET progress = ?, ual = ?, state = ? WHERE  txn_id = ?`;
+          await othubdb_connection.query(
+            query,
+            [
+              "COMPLETE",
+              dkg_create_result.UAL,
+              dkg_create_result.publicAssertionId,
+              data.txn_id,
+            ],
+            function (error, results, fields) {
+              if (error) throw error;
+            }
+          );
 
-            query = `UPDATE txn_header SET progress = ?, ual = ?, state = ? WHERE  txn_id = ?`;
-            await othubdb_connection.query(
-              query,
-              [
-                "COMPLETE",
-                dkg_create_result.UAL,
-                dkg_create_result.publicAssertionId,
-                data.txn_id,
-              ],
-              function (error, results, fields) {
-                if (error) throw error;
-              }
-            );
-
-            return result;
-          })
-          .catch(async (error) => {
-            console.log(error);
-            console.log(`Create for Create n Transfer request failed.`);
-            query = `UPDATE txn_header SET progress = ? WHERE  txn_id = ?`;
-            await othubdb_connection.query(
-              query,
-              [
-                "TRANSFER-FAILED",
-                data.txn_id
-              ],
-              function (error, results, fields) {
-                if (error) throw error;
-              }
-            );
-            return;
-          });
-      }
+          return result;
+        })
+        .catch(async (error) => {
+          console.log(error);
+          console.log(`Create for Create n Transfer request failed.`);
+          query = `UPDATE txn_header SET progress = ? WHERE  txn_id = ?`;
+          await othubdb_connection.query(
+            query,
+            ["TRANSFER-FAILED", data.txn_id],
+            function (error, results, fields) {
+              if (error) throw error;
+            }
+          );
+          return;
+        });
     }
 
-    return `Create and Transfer successful for UAL ${dkg_create_result.UAL}`;
+    return;
   } catch (error) {
     throw new Error("Upload failed: " + error.message);
   }
