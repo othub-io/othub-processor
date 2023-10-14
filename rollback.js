@@ -9,7 +9,7 @@ const othubdb_connection = mysql.createConnection({
 
 const rollback = async () =>{
   try {
-    query = `UPDATE txn_header set progress = 'PENDING' where progress='PROCESSING' OR progress='FAILED`;
+    query = `UPDATE txn_header set progress = 'PENDING' where progress='PROCESSING'`;
         await othubdb_connection.query(
           query,
           [],
