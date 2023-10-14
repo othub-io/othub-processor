@@ -118,6 +118,7 @@ async function uploadData(data) {
             return;
           }
 
+      console.log('CREATE RESULT: '+dkg_create_result)
       if (dkg_create_result.UAL !== '') {
         console.log(
           `Created UAL ${dkg_create_result.UAL} with ${wallet_array[index].name} wallet ${wallet_array[index].public_key}.`
