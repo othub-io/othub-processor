@@ -67,7 +67,7 @@ async function uploadData(data) {
     }
 
     const wallet_array = JSON.parse(process.env.WALLET_ARRAY);
-    const index = wallet_array.findIndex(
+    let index = wallet_array.findIndex(
       (obj) => obj.public_key == data.approver
     );
 
@@ -76,7 +76,7 @@ async function uploadData(data) {
     );
 
     if (data.network === "otp::testnet") {
-      const dkg_create_result = await testnet_dkg.asset
+      let dkg_create_result = await testnet_dkg.asset
         .create(
           {
             public: dkg_txn_data,
@@ -242,7 +242,7 @@ async function getPendingUploadRequests() {
     //   });
 
     const wallet_array = JSON.parse(process.env.WALLET_ARRAY);
-    const available_testnet_wallets = [];
+    let available_testnet_wallets = [];
     for (i = 0; i < wallet_array.length; i++) {
       query = `select * from txn_header where request = 'Create-n-Transfer' AND approver = ? AND network = ? order by updated_at desc LIMIT 1`;
       params = [wallet_array[i].public_key, "otp::testnet"];
