@@ -103,12 +103,12 @@ async function uploadData(data) {
         });
 
         if (!dkg_create_result || dkg_create_result.errorType) {
-            console.log(`Create for Create n Transfer request failed.`);
+            console.log(`Create for Create n Transfer request failed. Setting back to pending...`);
             query = `UPDATE txn_header SET progress = ? WHERE  txn_id = ?`;
             othubdb_connection.query(
               query,
               [
-                "CREATE-FAILED",
+                "PENDING",
                 data.txn_id
               ],
               function (error, results, fields) {
