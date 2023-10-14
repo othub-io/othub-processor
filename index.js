@@ -9,7 +9,7 @@ const othubdb_connection = mysql.createConnection({
 
 const DKGClient = require("dkg.js");
 const OT_NODE_TESTNET_PORT = process.env.OT_NODE_TESTNET_PORT;
-const OT_NODE_MAINNET_PORT = process.env.OT_NODE_MAINNET_PORT;
+//const OT_NODE_MAINNET_PORT = process.env.OT_NODE_MAINNET_PORT;
 
 const testnet_node_options = {
   endpoint: process.env.OT_NODE_HOSTNAME,
@@ -18,15 +18,15 @@ const testnet_node_options = {
   maxNumberOfRetries: 100,
 };
 
-const mainnet_node_options = {
-  endpoint: process.env.OT_NODE_HOSTNAME,
-  port: OT_NODE_MAINNET_PORT,
-  useSSL: true,
-  maxNumberOfRetries: 100,
-};
+// const mainnet_node_options = {
+//   endpoint: process.env.OT_NODE_HOSTNAME,
+//   port: OT_NODE_MAINNET_PORT,
+//   useSSL: true,
+//   maxNumberOfRetries: 100,
+// };
 
 const testnet_dkg = new DKGClient(testnet_node_options);
-const mainnet_dkg = new DKGClient(mainnet_node_options);
+//const mainnet_dkg = new DKGClient(mainnet_node_options);
 
 function executeOTHubQuery(query, params) {
   return new Promise((resolve, reject) => {
@@ -196,24 +196,24 @@ async function getPendingUploadRequests() {
         console.error("Error retrieving data:", error);
       });
 
-    sqlQuery = "select * FROM txn_header where progress = ? and network = ?";
-    params = ["PROCESSING", "otp::mainnet"];
-    mainnet_processing_count = await getOTHubData(sqlQuery, params)
-      .then((results) => {
-        //console.log('Query results:', results);
-        return results;
-        // Use the results in your variable or perform further operations
-      })
-      .catch((error) => {
-        console.error("Error retrieving data:", error);
-      });
+    // sqlQuery = "select * FROM txn_header where progress = ? and network = ?";
+    // params = ["PROCESSING", "otp::mainnet"];
+    // mainnet_processing_count = await getOTHubData(sqlQuery, params)
+    //   .then((results) => {
+    //     //console.log('Query results:', results);
+    //     return results;
+    //     // Use the results in your variable or perform further operations
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error retrieving data:", error);
+    //   });
 
     testnet_pending_count =
       Number(process.env.WALLET_COUNT) -
       Number(testnet_processing_count.length);
-    mainnet_pending_count =
-      Number(process.env.WALLET_COUNT) -
-      Number(mainnet_processing_count.length);
+    // mainnet_pending_count =
+    //   Number(process.env.WALLET_COUNT) -
+    //   Number(mainnet_processing_count.length);
 
     sqlQuery =
       "select * FROM txn_header where progress = ? and network = ? ORDER BY created_at DESC LIMIT ?";
@@ -228,18 +228,18 @@ async function getPendingUploadRequests() {
         console.error("Error retrieving data:", error);
       });
 
-    sqlQuery =
-      "select * FROM txn_header where progress = ? and network = ? ORDER BY created_at DESC LIMIT ?";
-    params = ["PENDING", "otp::mainnet", 1];
-    mainnet_request = await getOTHubData(sqlQuery, params)
-      .then((results) => {
-        //console.log('Query results:', results);
-        return results;
-        // Use the results in your variable or perform further operations
-      })
-      .catch((error) => {
-        console.error("Error retrieving data:", error);
-      });
+    // sqlQuery =
+    //   "select * FROM txn_header where progress = ? and network = ? ORDER BY created_at DESC LIMIT ?";
+    // params = ["PENDING", "otp::mainnet", 1];
+    // mainnet_request = await getOTHubData(sqlQuery, params)
+    //   .then((results) => {
+    //     //console.log('Query results:', results);
+    //     return results;
+    //     // Use the results in your variable or perform further operations
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error retrieving data:", error);
+    //   });
 
     const wallet_array = JSON.parse(process.env.WALLET_ARRAY);
     const available_testnet_wallets = [];
@@ -266,29 +266,29 @@ async function getPendingUploadRequests() {
       }
     }
 
-    const available_mainnet_wallets = [];
-    for (i = 0; i < wallet_array.length; i++) {
-      query = `select * from txn_header where request = 'Create-n-Transfer' AND approver = ? AND network = ? order by updated_at desc LIMIT 1`;
-      params = [wallet_array[i].public_key, "otp::mainnet"];
-      mainnet_last_processed = await getOTHubData(query, params)
-        .then((results) => {
-          //console.log('Query results:', results);
-          return results;
-          // Use the results in your variable or perform further operations
-        })
-        .catch((error) => {
-          console.error("Error retrieving data:", error);
-        });
+    // const available_mainnet_wallets = [];
+    // for (i = 0; i < wallet_array.length; i++) {
+    //   query = `select * from txn_header where request = 'Create-n-Transfer' AND approver = ? AND network = ? order by updated_at desc LIMIT 1`;
+    //   params = [wallet_array[i].public_key, "otp::mainnet"];
+    //   mainnet_last_processed = await getOTHubData(query, params)
+    //     .then((results) => {
+    //       //console.log('Query results:', results);
+    //       return results;
+    //       // Use the results in your variable or perform further operations
+    //     })
+    //     .catch((error) => {
+    //       console.error("Error retrieving data:", error);
+    //     });
 
-      if (Number(mainnet_last_processed.length) !== 0) {
-        if (
-          mainnet_last_processed[0].progress !== "PROCESSING" &&
-          mainnet_last_processed[0].progress !== "PENDING"
-        ) {
-          available_mainnet_wallets.push(wallet_array[i]);
-        }
-      }
-    }
+    //   if (Number(mainnet_last_processed.length) !== 0) {
+    //     if (
+    //       mainnet_last_processed[0].progress !== "PROCESSING" &&
+    //       mainnet_last_processed[0].progress !== "PENDING"
+    //     ) {
+    //       available_mainnet_wallets.push(wallet_array[i]);
+    //     }
+    //   }
+    // }
 
     if (Number(available_testnet_wallets.length) === 0) {
       testnet_request = [];
@@ -300,19 +300,19 @@ async function getPendingUploadRequests() {
     } else {
     }
 
-    if (Number(available_mainnet_wallets.length) === 0) {
-      mainnet_request = [];
-    } else if (Number(mainnet_request) !== 0) {
-      console.log(
-        `Mainnet has ${available_mainnet_wallets.length} open positions.`
-      );
-      mainnet_request[0].approver = available_mainnet_wallets[0].public_key;
-    } else {
-    }
+    // if (Number(available_mainnet_wallets.length) === 0) {
+    //   mainnet_request = [];
+    // } else if (Number(mainnet_request) !== 0) {
+    //   console.log(
+    //     `Mainnet has ${available_mainnet_wallets.length} open positions.`
+    //   );
+    //   mainnet_request[0].approver = available_mainnet_wallets[0].public_key;
+    // } else {
+    // }
 
     pending_requests = {
       testnet_requests: testnet_request,
-      mainnet_requests: mainnet_request,
+      //mainnet_requests: mainnet_request,
     };
 
     return pending_requests;
@@ -330,14 +330,14 @@ async function processPendingUploads() {
       uploadData(request)
     );
 
-    const mainnet_promises = pending_requests.mainnet_requests.map(
-      async (request) => uploadData(request)
-    );
+    // const mainnet_promises = pending_requests.mainnet_requests.map(
+    //   async (request) => uploadData(request)
+    // );
 
     const concurrentUploads = 10;
     await Promise.all(testnet_promises.slice(0, concurrentUploads));
 
-    await Promise.all(mainnet_promises.slice(0, concurrentUploads));
+    // await Promise.all(mainnet_promises.slice(0, concurrentUploads));
   } catch (error) {
     console.error("Error processing pending uploads:", error);
   }
