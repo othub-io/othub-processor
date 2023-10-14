@@ -61,7 +61,7 @@ async function uploadData(data) {
       }
     );
 
-    dkg_txn_data = JSON.parse(data.txn_data);
+    let dkg_txn_data = JSON.parse(data.txn_data);
     if (!dkg_txn_data["@context"]) {
       dkg_txn_data["@context"] = "https://schema.org";
     }
@@ -76,7 +76,7 @@ async function uploadData(data) {
     );
 
     if (data.network === "otp::testnet") {
-      dkg_create_result = await testnet_dkg.asset
+      const dkg_create_result = await testnet_dkg.asset
         .create(
           {
             public: dkg_txn_data,
@@ -105,7 +105,7 @@ async function uploadData(data) {
         if (!dkg_create_result || dkg_create_result.errorType) {
             console.log(`Create for Create n Transfer request failed. Setting back to pending...`);
             query = `UPDATE txn_header SET progress = ? WHERE  txn_id = ?`;
-            othubdb_connection.query(
+            await othubdb_connection.query(
               query,
               [
                 "PENDING",
@@ -123,7 +123,7 @@ async function uploadData(data) {
         );
         console.log(`Transfering to ${data.receiver}...`);
 
-        dkg_transfer_result = await testnet_dkg.asset
+         await testnet_dkg.asset
           .transfer(dkg_create_result.UAL, data.receiver, {
             epochsNum: data.epochs,
             maxNumberOfRetries: 30,
@@ -136,13 +136,13 @@ async function uploadData(data) {
               privateKey: wallet_array[index].private_key,
             },
           })
-          .then((result) => {
+          .then(async (result) => {
             console.log(
               `Transfered ${dkg_create_result.UAL} to ${data.receiver} with ${wallet_array[index].name} wallet ${wallet_array[index].public_key}.`
             );
 
             query = `UPDATE txn_header SET progress = ?, ual = ?, state = ? WHERE  txn_id = ?`;
-            othubdb_connection.query(
+            await othubdb_connection.query(
               query,
               [
                 "COMPLETE",
@@ -157,11 +157,11 @@ async function uploadData(data) {
 
             return result;
           })
-          .catch((error) => {
+          .catch(async (error) => {
             console.log(error);
             console.log(`Create for Create n Transfer request failed.`);
             query = `UPDATE txn_header SET progress = ? WHERE  txn_id = ?`;
-            othubdb_connection.query(
+            await othubdb_connection.query(
               query,
               [
                 "TRANSFER-FAILED",
