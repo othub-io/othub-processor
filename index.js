@@ -98,14 +98,9 @@ async function uploadData(data) {
           //console.log(JSON.stringify(result))
           return result;
         })
-        .catch((error) => {
+        .catch(async (error) => {
           console.log(error);
-        });
-
-        console.log('CREATE RESULT: '+ JSON.stringify(dkg_create_result))
-
-        if (!dkg_create_result || dkg_create_result.errorType) {
-            console.log(`Create for Create n Transfer request failed. Setting back to pending...`);
+          console.log(`Create for Create n Transfer request failed. Setting back to pending...`);
             query = `UPDATE txn_header SET progress = ? WHERE  txn_id = ?`;
             await othubdb_connection.query(
               query,
@@ -118,9 +113,11 @@ async function uploadData(data) {
               }
             );
             return;
-          }
+        });
 
-      if (dkg_create_result) {
+        console.log('CREATE RESULT: '+ JSON.stringify(dkg_create_result))
+
+      if (dkg_create_result !== '') {
         console.log(
           `Created UAL ${dkg_create_result.UAL} with ${wallet_array[index].name} wallet ${wallet_array[index].public_key}.`
         );
