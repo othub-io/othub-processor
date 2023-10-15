@@ -209,7 +209,7 @@ async function getPendingUploadRequests() {
     //   Number(mainnet_processing_count.length);
 
     sqlQuery =
-      "select * FROM txn_header where progress = ? and network = ? ORDER BY updated_at DESC LIMIT ?";
+      "select * FROM txn_header where progress = ? and network = ? ORDER BY created_at ASC LIMIT ?";
     params = ["PENDING", "otp::testnet", 1];
     testnet_request = await getOTHubData(sqlQuery, params)
       .then((results) => {
