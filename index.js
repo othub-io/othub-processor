@@ -251,8 +251,7 @@ async function getPendingUploadRequests() {
 
       if (Number(testnet_last_processed.length) !== 0) {
         if (
-          testnet_last_processed[0].progress !== "PROCESSING" &&
-          testnet_last_processed[0].progress !== "PENDING"
+          testnet_last_processed[0].progress !== "PROCESSING"
         ) {
           available_testnet_wallets.push(wallet_array[i]);
         }
@@ -286,12 +285,13 @@ async function getPendingUploadRequests() {
     if (Number(available_testnet_wallets.length) === 0) {
       testnet_request = [];
     } else if (Number(testnet_request) !== 0) {
-      console.log(
-        `Testnet has ${available_testnet_wallets.length} open positions.`
-      );
       testnet_request[0].approver = available_testnet_wallets[0].public_key;
     } else {
     }
+
+    console.log(
+      `Testnet has ${available_testnet_wallets.length} open positions.`
+    );
 
     // if (Number(available_mainnet_wallets.length) === 0) {
     //   mainnet_request = [];
