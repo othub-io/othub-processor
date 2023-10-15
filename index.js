@@ -50,6 +50,12 @@ async function getOTHubData(query, params) {
   }
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 async function uploadData(data) {
   try {
     query = `UPDATE txn_header SET progress = ?, approver = ? WHERE txn_id = ?`;
@@ -101,8 +107,9 @@ async function uploadData(data) {
         .catch(async (error) => {
           console.log(error);
           console.log(
-            `Create for Create n Transfer request failed. Setting back to pending...`
+            `Create for Create n Transfer request failed. Setting back to pending in 3 minutes...`
           );
+          await sleep(180000);
           query = `UPDATE txn_header SET progress = ? WHERE  txn_id = ?`;
           await othubdb_connection.query(
             query,
