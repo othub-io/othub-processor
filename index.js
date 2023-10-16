@@ -300,8 +300,8 @@ async function getPendingUploadRequests() {
 
         if (
           last_processed[0].progress !== "PROCESSING" &&
-          last_processed[0].progress !== "PENDING" &&
-          last_processed[0].progress !== "TRANSFER-FAILED"
+          last_processed[0].progress !== "TRANSFER-FAILED" &&
+          last_processed[0].progress !== "TRANSFER-ABANDONED"
         ) {
           available_wallets.push(wallet_array[x]);
         }
