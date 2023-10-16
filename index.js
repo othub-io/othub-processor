@@ -60,13 +60,16 @@ function sleep(ms) {
 async function uploadData(data) {
   try {
     let query = `UPDATE txn_header SET progress = ?, approver = ? WHERE txn_id = ?`;
-    await othubdb_connection.query(
-      query,
-      ["PROCESSING", data.approver, data.txn_id],
-      function (error, results, fields) {
-        if (error) throw error;
-      }
-    );
+    let params = ["PROCESSING", data.approver, data.txn_id];
+    await getOTHubData(query, params)
+      .then((results) => {
+        //console.log('Query results:', results);
+        return results;
+        // Use the results in your variable or perform further operations
+      })
+      .catch((error) => {
+        console.error("Error retrieving data:", error);
+      });
 
     let dkg_txn_data = JSON.parse(data.txn_data);
     if (!dkg_txn_data["@context"]) {
@@ -106,19 +109,24 @@ async function uploadData(data) {
           return result;
         })
         .catch(async (error) => {
-          console.log(error)
+          console.log(error);
           console.log(
-            `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Create for Create n Transfer request failed. Setting back to pending in 3 minutes...`
+            `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Create failed. Setting back to pending in 3 minutes...`
           );
           await sleep(180000);
+
           query = `UPDATE txn_header SET progress = ?, approver = ? WHERE txn_id = ?`;
-          await othubdb_connection.query(
-            query,
-            ["PENDING", null, data.txn_id],
-            function (error, results, fields) {
-              if (error) throw error;
-            }
-          );
+          params = ["PENDING", null, data.txn_id];
+          await getOTHubData(query, params)
+            .then((results) => {
+              //console.log('Query results:', results);
+              return results;
+              // Use the results in your variable or perform further operations
+            })
+            .catch((error) => {
+              console.error("Error retrieving data:", error);
+            });
+
           throw new Error("Create failed: " + error.message);
         });
 
@@ -145,71 +153,65 @@ async function uploadData(data) {
           );
 
           query = `UPDATE txn_header SET progress = ?, ual = ?, state = ? WHERE  txn_id = ?`;
-          await othubdb_connection.query(
-            query,
-            [
-              "COMPLETE",
-              dkg_create_result.UAL,
-              dkg_create_result.publicAssertionId,
-              data.txn_id,
-            ],
-            function (error, results, fields) {
-              if (error) throw error;
-            }
-          );
+          params = [
+            "COMPLETE",
+            dkg_create_result.UAL,
+            dkg_create_result.publicAssertionId,
+            data.txn_id,
+          ];
+          await getOTHubData(query, params)
+            .then((results) => {
+              //console.log('Query results:', results);
+              return results;
+              // Use the results in your variable or perform further operations
+            })
+            .catch((error) => {
+              console.error("Error retrieving data:", error);
+            });
 
-          await sleep(2000);
           return result;
         })
         .catch(async (error) => {
-          console.log(error)
+          console.log(error);
           console.log(
-            `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Transfer for Create n Transfer request failed. Inserting failed transfer record...`
+            `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Transfer failed. Inserting failed transfer record...`
           );
+
           query = `INSERT INTO txn_header (txn_id, progress, approver, api_key, request, network, app_name, txn_description, txn_data, ual, keywords, state, txn_hash, txn_fee, trac_fee, epochs, receiver) VALUES (UUID(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
-          await othubdb_connection.query(
-            query,
-            [
-              "TRANSFER-FAILED",
-              wallet_array[index].public_key,
-              null,
-              "Create-N-Transfer",
-              data.network,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-            ],
-            function (error, results, fields) {
-              if (error) throw error;
-            }
-          );
+          params = [
+            "TRANSFER-FAILED",
+            wallet_array[index].public_key,
+            null,
+            "Create-N-Transfer",
+            data.network,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+          ];
+          await getOTHubData(query, params)
+            .then((results) => {
+              //console.log('Query results:', results);
+              return results;
+              // Use the results in your variable or perform further operations
+            })
+            .catch((error) => {
+              console.error("Error retrieving data:", error);
+            });
+
           throw new Error("Transfer failed: " + error.message);
         });
     }
 
     return;
   } catch (error) {
-    console.log(error)
-    console.log(
-      ` Unexpected Error. Setting back to pending in 3 minutes...`
-    );
-    await sleep(180000);
-    query = `UPDATE txn_header SET progress = ?, approver = ? WHERE txn_id = ?`;
-    await othubdb_connection.query(
-      query,
-      ["PENDING", null, data.txn_id],
-      function (error, results, fields) {
-        if (error) throw error;
-      }
-    );
     throw new Error("Unexpected Error: " + error.message);
   }
 }
@@ -218,32 +220,10 @@ async function getPendingUploadRequests() {
   try {
     console.log(`Checking for transactions to process...`);
     const network_array = JSON.parse(process.env.SUPPORTED_NETWORKS);
+    const wallet_array = JSON.parse(process.env.WALLET_ARRAY);
 
     let pending_requests = [];
     for (i = 0; i < network_array.length; i++) {
-      let sqlQuery =
-        "select * FROM txn_header where progress = ? and network = ?";
-      let params = ["PROCESSING", network_array[i].network];
-      let processing_count = await getOTHubData(sqlQuery, params)
-        .then((results) => {
-          //console.log('Query results:', results);
-          return results;
-          // Use the results in your variable or perform further operations
-        })
-        .catch((error) => {
-          console.error("Error retrieving data:", error);
-        });
-
-    const wallet_array = JSON.parse(process.env.WALLET_ARRAY);
-      open_positions =
-        Number(wallet_array.length) - Number(processing_count.length);
-      console.log(
-        `${network_array[i].network} has ${open_positions} open positions.`
-      );
-      if (open_positions === 0) {
-        continue;
-      }
-
       sqlQuery =
         "select * FROM txn_header where progress = ? and network = ? ORDER BY created_at ASC LIMIT 1";
       params = ["PENDING", network_array[i].network];
@@ -258,6 +238,9 @@ async function getPendingUploadRequests() {
         });
 
       if (Number(request.length) === 0) {
+        console.log(
+          `${network_array[i].network} has no pending requets.`
+        );
         continue;
       }
 
@@ -275,32 +258,33 @@ async function getPendingUploadRequests() {
             console.error("Error retrieving data:", error);
           });
 
-        if (Number(last_processed.length) === 0) {
-          continue;
-        }
-
         let updatedAtTimestamp = last_processed[0].updated_at;
         let currentTimestamp = new Date();
         let timeDifference = currentTimestamp - updatedAtTimestamp;
 
         if (
-          last_processed[0].progress === "PROCESSING" && timeDifference >= 300000
+          last_processed[0].progress === "PROCESSING" &&
+          timeDifference >= 300000
         ) {
           query = `UPDATE txn_header SET progress = ?, approver = ? WHERE txn_id = ?`;
-          await othubdb_connection.query(
-            query,
-            ["PENDING", null, last_processed[0].txn_id],
-            function (error, results, fields) {
-              if (error) throw error;
-            }
-          );
+          params = ["PENDING", null, last_processed[0].txn_id];
+          await getOTHubData(query, params)
+            .then((results) => {
+              //console.log('Query results:', results);
+              return results;
+              // Use the results in your variable or perform further operations
+            })
+            .catch((error) => {
+              console.error("Error retrieving data:", error);
+            });
+
           available_wallets.push(wallet_array[x]);
           continue;
         }
 
         if (
           last_processed[0].progress !== "PROCESSING"
-           //&& last_processed[0].progress !== "TRANSFER-FAILED"
+          //&& last_processed[0].progress !== "TRANSFER-FAILED"
         ) {
           available_wallets.push(wallet_array[x]);
         }
@@ -313,9 +297,9 @@ async function getPendingUploadRequests() {
       if (Number(available_wallets.length) === 0) {
         continue;
       }
-      
+
       request[0].approver = available_wallets[0].public_key;
-      pending_requests.push(request[0])
+      pending_requests.push(request[0]);
     }
 
     return pending_requests;
@@ -329,18 +313,15 @@ async function processPendingUploads() {
     setTimeout(processPendingUploads, process.env.CYCLE_TIME_SEC * 1000);
     const pending_requests = await getPendingUploadRequests();
 
-    if(Number(pending_requests.length) === 0){
+    if (Number(pending_requests.length) === 0) {
       return;
     }
 
-    const promises = pending_requests.map((request) =>
-      uploadData(request)
-    );
+    const promises = pending_requests.map((request) => uploadData(request));
 
     const wallet_array = JSON.parse(process.env.WALLET_ARRAY);
     const concurrentUploads = wallet_array.length + 100;
     await Promise.all(promises.slice(0, concurrentUploads));
-
   } catch (error) {
     console.error("Error processing pending uploads:", error);
   }
