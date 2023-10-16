@@ -299,9 +299,8 @@ async function getPendingUploadRequests() {
         }
 
         if (
-          last_processed[0].progress !== "PROCESSING" &&
-          last_processed[0].progress !== "TRANSFER-FAILED" &&
-          last_processed[0].progress !== "TRANSFER-ABANDONED"
+          last_processed[0].progress !== "PROCESSING"
+           //&& last_processed[0].progress !== "TRANSFER-FAILED"
         ) {
           available_wallets.push(wallet_array[x]);
         }
