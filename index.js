@@ -266,8 +266,9 @@ async function getPendingUploadRequests() {
           last_processed[0].progress === "PROCESSING" &&
           timeDifference >= 300000
         ) {
-          query = `UPDATE txn_header SET progress = ?, approver = ? WHERE txn_id = ?`;
-          params = ["PENDING", null, last_processed[0].txn_id];
+          console.log(`${wallet_array[x].name} ${wallet_array[x].public_key}: Processing for over 5 minutes. Rolling back to PENDING...`)
+          query = `UPDATE txn_header SET progress = ?, approver = ? WHERE approver = ?`;
+          params = ["PENDING", null, wallet_array[x].public_key];
           await getOTHubData(query, params)
             .then((results) => {
               //console.log('Query results:', results);
