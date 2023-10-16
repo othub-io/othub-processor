@@ -239,7 +239,7 @@ async function getPendingUploadRequests() {
 
       if (Number(request.length) === 0) {
         console.log(
-          `${network_array[i].network} has no pending requets.`
+          `${network_array[i].network} has no pending requests.`
         );
         continue;
       }
