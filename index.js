@@ -191,6 +191,7 @@ async function uploadData(data) {
               name: data.network,
               publicKey: wallet_array[index].public_key,
               privateKey: wallet_array[index].private_key,
+              handleNotMinedError: true
             },
           }
         )
@@ -235,6 +236,7 @@ async function uploadData(data) {
             name: data.network,
             publicKey: wallet_array[index].public_key,
             privateKey: wallet_array[index].private_key,
+            handleNotMinedError: true
           },
         })
         .then(async (result) => {
