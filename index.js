@@ -374,7 +374,7 @@ async function getPendingUploadRequests() {
               console.error("Error retrieving data:", error);
             });
 
-          available_wallets.push(wallet_array[x].public_key);
+          available_wallets.push(wallet_array[x]);
           continue;
         }
 
@@ -414,7 +414,7 @@ async function getPendingUploadRequests() {
         if (
           last_processed[0].progress !== "PROCESSING"
         ) {
-          available_wallets.push(wallet_array[x].public_key);
+          available_wallets.push(wallet_array[x]);
         }
       }
 
