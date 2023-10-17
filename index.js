@@ -57,6 +57,96 @@ function sleep(ms) {
   });
 }
 
+// async function retryTransfer(data) {
+//   try {
+//     const wallet_array = JSON.parse(process.env.WALLET_ARRAY);
+//     let index = wallet_array.findIndex(
+//       (obj) => obj.public_key == data.approver
+//     );
+//     console.log(
+//       `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Retrying Transfer for UAL ${data.ual} on ${data.network}.`
+//     );
+
+//     if (data.network === "otp::testnet") {
+//       await testnet_dkg.asset
+//         .transfer(dkg_create_result.UAL, data.receiver, {
+//           maxNumberOfRetries: 30,
+//           frequency: 2,
+//           contentType: "all",
+//           blockchain: {
+//             name: data.network,
+//             publicKey: wallet_array[index].public_key,
+//             privateKey: wallet_array[index].private_key,
+//           },
+//         })
+//         .then(async (result) => {
+//           console.log(
+//             `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Transfered ${dkg_create_result.UAL} to ${data.receiver}.`
+//           );
+
+//           query = `UPDATE txn_header SET progress = ?, ual = ?, state = ? WHERE  txn_id = ?`;
+//           params = [
+//             "COMPLETE",
+//             data.UAL,
+//             dkg_create_result.publicAssertionId,
+//             data.txn_id,
+//           ];
+//           await getOTHubData(query, params)
+//             .then((results) => {
+//               //console.log('Query results:', results);
+//               return results;
+//               // Use the results in your variable or perform further operations
+//             })
+//             .catch((error) => {
+//               console.error("Error retrieving data:", error);
+//             });
+
+//           return result;
+//         })
+//         .catch(async (error) => {
+//           console.log(error);
+//           console.log(
+//             `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Transfer failed. Inserting failed transfer record...`
+//           );
+
+//           query = `INSERT INTO txn_header (txn_id, progress, approver, api_key, request, network, app_name, txn_description, txn_data, ual, keywords, state, txn_hash, txn_fee, trac_fee, epochs, receiver) VALUES (UUID(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+//           params = [
+//             "TRANSFER-FAILED",
+//             wallet_array[index].public_key,
+//             null,
+//             "Create-N-Transfer",
+//             data.network,
+//             null,
+//             null,
+//             null,
+//             dkg_create_result.UAL,
+//             null,
+//             null,
+//             null,
+//             null,
+//             null,
+//             null,
+//             data.receiver,
+//           ];
+//           await getOTHubData(query, params)
+//             .then((results) => {
+//               //console.log('Query results:', results);
+//               return results;
+//               // Use the results in your variable or perform further operations
+//             })
+//             .catch((error) => {
+//               console.error("Error retrieving data:", error);
+//             });
+
+//           throw new Error("Transfer failed: " + error.message);
+//         });
+//     }
+
+//   } catch (error) {
+//     console.error("Error processing pending uploads:", error);
+//   }
+// }
+
 async function uploadData(data) {
   try {
     let query = `UPDATE txn_header SET progress = ?, approver = ? WHERE txn_id = ?`;
@@ -109,6 +199,7 @@ async function uploadData(data) {
           return result;
         })
         .catch(async (error) => {
+          console.log(error);
           console.log(
             `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Create failed. Setting back to pending in 3 minutes...`
           );
@@ -171,6 +262,7 @@ async function uploadData(data) {
           return result;
         })
         .catch(async (error) => {
+          console.log(error);
           console.log(
             `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Transfer failed. Inserting failed transfer record...`
           );
@@ -185,14 +277,14 @@ async function uploadData(data) {
             null,
             null,
             null,
+            dkg_create_result.UAL,
             null,
             null,
             null,
             null,
             null,
             null,
-            null,
-            null,
+            data.receiver,
           ];
           await getOTHubData(query, params)
             .then((results) => {
@@ -210,7 +302,7 @@ async function uploadData(data) {
 
     return;
   } catch (error) {
-    throw new Error("Unexpected Error: " + error.message);
+    //throw new Error("Unexpected Error: " + error.message);
   }
 }
 
@@ -244,7 +336,7 @@ async function getPendingUploadRequests() {
 
       let available_wallets = [];
       for (x = 0; x < wallet_array.length; x++) {
-        query = `select * from txn_header where request = 'Create-n-Transfer' AND approver = ? AND network = ? order by updated_at desc LIMIT 1`;
+        query = `select * from txn_header where request = 'Create-n-Transfer' AND approver = ? AND network = ? order by updated_at desc LIMIT 5`;
         params = [wallet_array[x].public_key, network_array[i].network];
         last_processed = await getOTHubData(query, params)
           .then((results) => {
@@ -255,6 +347,11 @@ async function getPendingUploadRequests() {
           .catch((error) => {
             console.error("Error retrieving data:", error);
           });
+
+        if(Number(last_processed.length) === 0){
+          available_wallets.push(wallet_array[x].public_key);
+          continue;
+        }
 
         let updatedAtTimestamp = last_processed[0].updated_at;
         let currentTimestamp = new Date();
@@ -277,15 +374,47 @@ async function getPendingUploadRequests() {
               console.error("Error retrieving data:", error);
             });
 
-          available_wallets.push(wallet_array[x]);
+          available_wallets.push(wallet_array[x].public_key);
           continue;
         }
 
+        // if (
+        //   last_processed[0].progress === "TRANSFER-FAILED" && 
+        //   last_processed[1].progress === "TRANSFER-FAILED" && 
+        //   last_processed[2].progress === "TRANSFER-FAILED" && 
+        //   last_processed[3].progress === "TRANSFER-FAILED" && 
+        //   last_processed[4].progress === "TRANSFER-FAILED"
+        // ) {
+        //   console.log(`${wallet_array[x].name} ${wallet_array[x].public_key}: Transfer attempt failed 5 times. Abandoning transfer...`)
+        //   query = `UPDATE txn_header SET progress = ?, approver = ? WHERE txn_id = ?`;
+        //   params = ["ABANDONED", null, last_processed[0].txn_id];
+        //   await getOTHubData(query, params)
+        //     .then((results) => {
+        //       //console.log('Query results:', results);
+        //       return results;
+        //       // Use the results in your variable or perform further operations
+        //     })
+        //     .catch((error) => {
+        //       console.error("Error retrieving data:", error);
+        //     });
+
+        //   available_wallets.push(wallet_array[x].public_key);
+        //   continue;
+        // }
+
+        // if (
+        //   last_processed[0].progress === "TRANSFER-FAILED"
+        // ) {
+        //   console.log(`${wallet_array[x].name} ${wallet_array[x].public_key}: Retrying failed Transfer...`)
+
+        //   await retryTransfer(last_processed[0]);
+        //   continue;
+        // }
+
         if (
           last_processed[0].progress !== "PROCESSING"
-          //&& last_processed[0].progress !== "TRANSFER-FAILED"
         ) {
-          available_wallets.push(wallet_array[x]);
+          available_wallets.push(wallet_array[x].public_key);
         }
       }
 
