@@ -99,7 +99,7 @@ async function uploadData(data) {
             keywords: data.keywords,
             blockchain: {
               name: data.network,
-              publicKey: data.approver,
+              publicKey: wallet_array[index].name,
               privateKey: wallet_array[index].private_key,
             },
           }
@@ -109,7 +109,6 @@ async function uploadData(data) {
           return result;
         })
         .catch(async (error) => {
-          console.log(error);
           console.log(
             `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Create failed. Setting back to pending in 3 minutes...`
           );
@@ -143,7 +142,7 @@ async function uploadData(data) {
           keywords: data.keywords,
           blockchain: {
             name: data.network,
-            publicKey: data.approver,
+            publicKey: wallet_array[index].name,
             privateKey: wallet_array[index].private_key,
           },
         })
@@ -172,7 +171,6 @@ async function uploadData(data) {
           return result;
         })
         .catch(async (error) => {
-          console.log(error);
           console.log(
             `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Transfer failed. Inserting failed transfer record...`
           );
