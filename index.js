@@ -99,7 +99,7 @@ async function uploadData(data) {
             keywords: data.keywords,
             blockchain: {
               name: data.network,
-              publicKey: wallet_array[index].name,
+              publicKey: wallet_array[index].public_key,
               privateKey: wallet_array[index].private_key,
             },
           }
@@ -142,7 +142,7 @@ async function uploadData(data) {
           keywords: data.keywords,
           blockchain: {
             name: data.network,
-            publicKey: wallet_array[index].name,
+            publicKey: wallet_array[index].public_key,
             privateKey: wallet_array[index].private_key,
           },
         })
