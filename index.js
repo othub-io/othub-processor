@@ -114,7 +114,7 @@ function sleep(ms) {
 //             "TRANSFER-FAILED",
 //             wallet_array[index].public_key,
 //             null,
-//             "Create-N-Transfer",
+//             "Create-n-Transfer",
 //             data.network,
 //             null,
 //             null,
@@ -153,9 +153,7 @@ async function uploadData(data) {
     let params = ["PROCESSING", data.approver, data.txn_id];
     await getOTHubData(query, params)
       .then((results) => {
-        //console.log('Query results:', results);
         return results;
-        // Use the results in your variable or perform further operations
       })
       .catch((error) => {
         console.error("Error retrieving data:", error);
@@ -196,7 +194,6 @@ async function uploadData(data) {
           }
         )
         .then((result) => {
-          //console.log(JSON.stringify(result))
           return result;
         })
         .catch(async (error) => {
@@ -206,13 +203,11 @@ async function uploadData(data) {
           );
           await sleep(180000);
 
-          query = `UPDATE txn_header SET progress = ?, approver = ? WHERE approver = ? AND request = 'Create-N-Transfer' AND progress= ?`;
+          query = `UPDATE txn_header SET progress = ?, approver = ? WHERE approver = ? AND request = 'Create-n-Transfer' AND progress = ?`;
           params = ["PENDING", null, wallet_array[index].public_key,"PROCESSING"];
           await getOTHubData(query, params)
             .then((results) => {
-              //console.log('Query results:', results);
               return results;
-              // Use the results in your variable or perform further operations
             })
             .catch((error) => {
               console.error("Error retrieving data:", error);
@@ -253,10 +248,7 @@ async function uploadData(data) {
           ];
           await getOTHubData(query, params)
             .then((results) => {
-              //console.log('Query results:', results);
-              console.log('Updated to complete.')
               return results;
-              // Use the results in your variable or perform further operations
             })
             .catch((error) => {
               console.error("Error retrieving data:", error);
@@ -273,7 +265,7 @@ async function uploadData(data) {
             "TRANSFER-FAILED",
             wallet_array[index].public_key,
             null,
-            "Create-N-Transfer",
+            "Create-n-Transfer",
             data.network,
             null,
             null,
@@ -300,7 +292,6 @@ async function uploadData(data) {
           throw new Error("Transfer failed: " + error.message);
         });
     }
-
     return;
   } catch (error) {
     //throw new Error("Unexpected Error: " + error.message);
@@ -363,7 +354,7 @@ async function getPendingUploadRequests() {
           timeDifference >= 600000
         ) {
           console.log(`${wallet_array[x].name} ${wallet_array[x].public_key}: Processing for over 10 minutes. Rolling back to pending...`)
-          query = `UPDATE txn_header SET progress = ?, approver = ? WHERE approver = ? AND progress = ? AND request = 'Create-N-Transfer'`;
+          query = `UPDATE txn_header SET progress = ?, approver = ? WHERE approver = ? AND progress = ? AND request = 'Create-n-Transfer'`;
           params = ["PENDING", null, wallet_array[x].public_key, "PROCESSING"];
           await getOTHubData(query, params)
             .then((results) => {
