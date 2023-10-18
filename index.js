@@ -244,7 +244,7 @@ async function uploadData(data) {
             `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Transfered ${dkg_create_result.UAL} to ${data.receiver}.`
           );
 
-          query = `UPDATE txn_header SET progress = ?, ual = ?, state = ? WHERE  txn_id = ?`;
+          query = `UPDATE txn_header SET progress = ?, ual = ?, state = ? WHERE txn_id = ?`;
           params = [
             "COMPLETE",
             dkg_create_result.UAL,
@@ -254,14 +254,13 @@ async function uploadData(data) {
           await getOTHubData(query, params)
             .then((results) => {
               //console.log('Query results:', results);
+              console.log('Updated to complete.')
               return results;
               // Use the results in your variable or perform further operations
             })
             .catch((error) => {
               console.error("Error retrieving data:", error);
             });
-
-          return result;
         })
         .catch(async (error) => {
           console.log(error);
@@ -363,7 +362,7 @@ async function getPendingUploadRequests() {
           last_processed[0].progress === "PROCESSING" &&
           timeDifference >= 600000
         ) {
-          console.log(`${wallet_array[x].name} ${wallet_array[x].public_key}: Processing for over 10 minutes. Rolling back to PENDING...`)
+          console.log(`${wallet_array[x].name} ${wallet_array[x].public_key}: Processing for over 10 minutes. Rolling back to pending...`)
           query = `UPDATE txn_header SET progress = ?, approver = ? WHERE approver = ? AND progress = ? AND request = 'Create-N-Transfer'`;
           params = ["PENDING", null, wallet_array[x].public_key, "PROCESSING"];
           await getOTHubData(query, params)
