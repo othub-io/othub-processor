@@ -206,8 +206,8 @@ async function uploadData(data) {
           );
           await sleep(180000);
 
-          query = `UPDATE txn_header SET progress = ?, approver = ? WHERE txn_id = ?`;
-          params = ["PENDING", null, data.txn_id];
+          query = `UPDATE txn_header SET progress = ?, approver = ? WHERE approver = ? AND request = 'Create-N-Transfer'`;
+          params = ["PENDING", null, wallet_array[index].public_key];
           await getOTHubData(query, params)
             .then((results) => {
               //console.log('Query results:', results);
@@ -351,7 +351,7 @@ async function getPendingUploadRequests() {
           });
 
         if(Number(last_processed.length) === 0){
-          available_wallets.push(wallet_array[x].public_key);
+          available_wallets.push(wallet_array[x]);
           continue;
         }
 
