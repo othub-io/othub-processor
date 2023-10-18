@@ -206,8 +206,8 @@ async function uploadData(data) {
           );
           await sleep(180000);
 
-          query = `UPDATE txn_header SET progress = ?, approver = ? WHERE approver = ? AND request = 'Create-N-Transfer'`;
-          params = ["PENDING", null, wallet_array[index].public_key];
+          query = `UPDATE txn_header SET progress = ?, approver = ? WHERE approver = ? AND request = 'Create-N-Transfer' AND progress= ?`;
+          params = ["PENDING", null, wallet_array[index].public_key,"PROCESSING"];
           await getOTHubData(query, params)
             .then((results) => {
               //console.log('Query results:', results);
@@ -364,7 +364,7 @@ async function getPendingUploadRequests() {
           timeDifference >= 600000
         ) {
           console.log(`${wallet_array[x].name} ${wallet_array[x].public_key}: Processing for over 10 minutes. Rolling back to PENDING...`)
-          query = `UPDATE txn_header SET progress = ?, approver = ? WHERE approver = ? AND progress = ?`;
+          query = `UPDATE txn_header SET progress = ?, approver = ? WHERE approver = ? AND progress = ? AND request = 'Create-N-Transfer'`;
           params = ["PENDING", null, wallet_array[x].public_key, "PROCESSING"];
           await getOTHubData(query, params)
             .then((results) => {
