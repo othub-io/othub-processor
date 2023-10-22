@@ -165,7 +165,6 @@ async function uploadData(data) {
         console.error("Error retrieving data:", error);
       });
 
-      console.log(data.txn_data)
     let dkg_txn_data = JSON.parse(data.txn_data);
     if (!dkg_txn_data["@context"]) {
       dkg_txn_data["@context"] = "https://schema.org";
@@ -328,7 +327,15 @@ async function uploadData(data) {
     return;
   } catch (error) {
     console.log(error)
-    //throw new Error("Unexpected Error: " + error.message);
+    query = `UPDATE txn_header SET progress = ?, approver = ? WHERE txn_id = ?`;
+    params = ["ABANDONED", null, data.txn_id];
+    await getOTHubData(query, params)
+      .then((results) => {
+        return results;
+      })
+      .catch((error) => {
+        console.error("Error retrieving data:", error);
+      });
   }
 }
 
