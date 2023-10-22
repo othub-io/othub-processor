@@ -206,7 +206,7 @@ async function uploadData(data) {
           console.log(error);
           console.log(JSON.stringify(error))
           error = JSON.stringify(error)
-          if(error.includes('Safe mode validation error.')){
+          if(error.name === 'jsonld.ValidationError'){
             console.log(
               `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Create failed due to safe mode validation. Abandoning...`
             );
