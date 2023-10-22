@@ -326,6 +326,7 @@ async function uploadData(data) {
     }
     return;
   } catch (error) {
+    console.log(error)
     //throw new Error("Unexpected Error: " + error.message);
   }
 }
