@@ -204,7 +204,6 @@ async function uploadData(data) {
         })
         .catch(async (error) => {
           console.log(error);
-          console.log(error.details.event.message)
           if(error.details.event.message === 'Relative object reference found.'){
             console.log(
               `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Create failed due to safe mode validation. Abandoning...`
