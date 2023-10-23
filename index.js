@@ -367,7 +367,7 @@ async function getPendingUploadRequests() {
 
       let available_wallets = [];
       for (x = 0; x < wallet_array.length; x++) {
-        query = `select progress, updated_at, approver, ual from txn_header where request = 'Create-n-Transfer' AND approver = ? AND network = ? order by updated_at desc LIMIT 1`;
+        query = `select txn_id,progress,approver,network,txn_data,keywords,epochs,updated_at,created_at,receiver,ual from txn_header where request = 'Create-n-Transfer' AND approver = ? AND network = ? order by updated_at desc LIMIT 1`;
         params = [wallet_array[x].public_key, network_array[i].network];
         last_processed = await getOTHubData(query, params)
           .then((results) => {
@@ -431,6 +431,7 @@ async function getPendingUploadRequests() {
               console.error("Error retrieving data:", error);
             });
 
+            console.log('reee '+ retries)
           if (Number(retries.count) >= 5) {
             console.log(
               `${wallet_array[x].name} ${wallet_array[x].public_key}: Transfer attempt failed 5 times. Abandoning transfer...`
