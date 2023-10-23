@@ -367,7 +367,7 @@ async function getPendingUploadRequests() {
 
       let available_wallets = [];
       for (x = 0; x < wallet_array.length; x++) {
-        query = `select progress, updated_at from txn_header where request = 'Create-n-Transfer' AND approver = ? AND network = ? order by updated_at desc LIMIT 1`;
+        query = `select progress, updated_at, approver from txn_header where request = 'Create-n-Transfer' AND approver = ? AND network = ? order by updated_at desc LIMIT 1`;
         params = [wallet_array[x].public_key, network_array[i].network];
         last_processed = await getOTHubData(query, params)
           .then((results) => {
@@ -456,7 +456,7 @@ async function getPendingUploadRequests() {
           }
 
           console.log(
-            `${wallet_array[x].name} ${wallet_array[x].public_key}: Retrying failed transfer ${retries.length}...`
+            `${wallet_array[x].name} ${wallet_array[x].public_key}: Retrying failed transfer ${retries}...`
           );
 
           await retryTransfer(last_processed[0]);
