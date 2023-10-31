@@ -208,10 +208,11 @@ async function uploadData(data) {
             console.log(
               `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Create failed due to safe mode validation. Abandoning...`
             );
-            query = `UPDATE txn_header SET progress = ?, approver = ? WHERE approver = ? AND request = 'Create-n-Transfer' AND progress = ?`;
+            query = `UPDATE txn_header SET progress = ?, approver = ?, txn_data = ? WHERE approver = ? AND request = 'Create-n-Transfer' AND progress = ?`;
             params = [
               "ABANDONED",
               null,
+              `{"data":"bad"}`,
               wallet_array[index].public_key,
               "PROCESSING",
             ];
