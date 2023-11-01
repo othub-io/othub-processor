@@ -349,7 +349,7 @@ async function getPendingUploadRequests() {
     let pending_requests = [];
     for (i = 0; i < network_array.length; i++) {
       sqlQuery =
-        "select txn_id,progress,approver,network,txn_data,keywords,epochs,updated_at,created_at,receiver FROM txn_header where progress = ? and network = ? ORDER BY created_at ASC LIMIT 1";
+        "select txn_id,progress,approver,network,txn_data,keywords,epochs,updated_at,created_at,receiver FROM txn_header where progress = ? and network = ? and 'Create-n-Transfer' ORDER BY created_at ASC LIMIT 1";
       params = ["PENDING", network_array[i].network];
       let request = await getOTHubData(sqlQuery, params)
         .then((results) => {
