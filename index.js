@@ -29,6 +29,9 @@ const mainnet_node_options = {
 const testnet_dkg = new DKGClient(testnet_node_options);
 const mainnet_dkg = new DKGClient(mainnet_node_options);
 
+const network_array = JSON.parse(process.env.SUPPORTED_NETWORKS);
+const wallet_array = JSON.parse(process.env.WALLET_ARRAY);
+
 function executeOTHubQuery(query, params) {
   return new Promise((resolve, reject) => {
     othubdb_connection.query(query, params, (error, results) => {
@@ -71,7 +74,6 @@ async function retryTransfer(data) {
         console.error("Error retrieving data:", error);
       });
 
-    const wallet_array = JSON.parse(process.env.WALLET_ARRAY);
     let index = wallet_array.findIndex(
       (obj) => obj.public_key == data.approver
     );
@@ -170,7 +172,6 @@ async function uploadData(data) {
       dkg_txn_data["@context"] = "https://schema.org";
     }
 
-    const wallet_array = JSON.parse(process.env.WALLET_ARRAY);
     let index = wallet_array.findIndex(
       (obj) => obj.public_key == data.approver
     );
@@ -352,8 +353,6 @@ async function uploadData(data) {
 async function getPendingUploadRequests() {
   try {
     console.log(`Checking for transactions to process...`);
-    const network_array = JSON.parse(process.env.SUPPORTED_NETWORKS);
-    const wallet_array = JSON.parse(process.env.WALLET_ARRAY);
 
     let pending_requests = [];
     for (i = 0; i < network_array.length; i++) {
@@ -441,7 +440,6 @@ async function getPendingUploadRequests() {
               console.error("Error retrieving data:", error);
             });
 
-          console.log("reee " + retries);
           if (Number(retries.count) >= 5) {
             console.log(
               `${wallet_array[x].name} ${wallet_array[x].public_key}: Transfer attempt failed 5 times. Abandoning transfer...`
@@ -511,7 +509,6 @@ async function processPendingUploads() {
 
     const promises = pending_requests.map((request) => uploadData(request));
 
-    const wallet_array = JSON.parse(process.env.WALLET_ARRAY);
     const concurrentUploads = wallet_array.length + 100;
     await Promise.all(promises.slice(0, concurrentUploads));
   } catch (error) {
