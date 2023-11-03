@@ -204,7 +204,7 @@ async function uploadData(data) {
         })
         .catch(async (error) => {
           console.log(error);
-          if(error.name === 'jsonld.ValidationError'){
+          if (error.name === "jsonld.ValidationError") {
             console.log(
               `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Create failed due to safe mode validation. Abandoning...`
             );
@@ -223,12 +223,12 @@ async function uploadData(data) {
               .catch((error) => {
                 console.error("Error retrieving data:", error);
               });
-          }else{
+          } else {
             console.log(
               `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Create failed. Setting back to pending in 3 minutes...`
             );
             await sleep(180000);
-  
+
             query = `UPDATE txn_header SET progress = ?, approver = ? WHERE approver = ? AND request = 'Create-n-Transfer' AND progress = ?`;
             params = [
               "PENDING",
@@ -327,9 +327,18 @@ async function uploadData(data) {
     }
     return;
   } catch (error) {
-    console.log(error)
-    query = `UPDATE txn_header SET progress = ?, approver = ? WHERE txn_id = ?`;
-    params = ["ABANDONED", null, data.txn_id];
+    console.log(error);
+    console.log(
+      `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Create failed. Abandoning...`
+    );
+    query = `UPDATE txn_header SET progress = ?, approver = ?, txn_data = ? WHERE approver = ? AND request = 'Create-n-Transfer' AND progress = ?`;
+    params = [
+      "ABANDONED",
+      null,
+      `{"data":"bad"}`,
+      wallet_array[index].public_key,
+      "PROCESSING",
+    ];
     await getOTHubData(query, params)
       .then((results) => {
         return results;
@@ -432,7 +441,7 @@ async function getPendingUploadRequests() {
               console.error("Error retrieving data:", error);
             });
 
-            console.log('reee '+ retries)
+          console.log("reee " + retries);
           if (Number(retries.count) >= 5) {
             console.log(
               `${wallet_array[x].name} ${wallet_array[x].public_key}: Transfer attempt failed 5 times. Abandoning transfer...`
@@ -465,7 +474,10 @@ async function getPendingUploadRequests() {
           continue;
         }
 
-        if (last_processed[0].progress !== "PROCESSING" && last_processed[0].progress !== "TRANSFER-FAILED") {
+        if (
+          last_processed[0].progress !== "PROCESSING" &&
+          last_processed[0].progress !== "TRANSFER-FAILED"
+        ) {
           available_wallets.push(wallet_array[x]);
         }
       }
