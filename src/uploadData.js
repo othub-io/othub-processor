@@ -115,7 +115,6 @@ module.exports = {
           return result;
         })
         .catch(async (error) => {
-          console.log(`1 ` +error)
           error_obj = {
             error: error.message,
             index: index,
@@ -165,7 +164,7 @@ module.exports = {
         .catch(async (error) => {
           console.log(`1 ` +error)
           error_obj = {
-            error: error,
+            error: error.message,
             index: index,
             request: "Transfer",
             ual: dkg_create_result.UAL,

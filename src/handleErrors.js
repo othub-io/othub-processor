@@ -41,10 +41,10 @@ async function getOTHubData(query, params) {
 module.exports = {
   handleError: async function handleError(message) {
     try {
-      console.log(JSON.stringify(message));
+      console.log(JSON.stringify(message.error));
       let query;
       let params;
-      if (message.error.name === "jsonld.ValidationError") {
+      if (message.error === "Safe mode validation error.") {
         console.log(
           `${wallet_array[message.index].name} wallet ${
             wallet_array[message.index].public_key
@@ -67,7 +67,7 @@ module.exports = {
         return;
       }
 
-      if (message.request === "Create-n-Transfer"  && JSON.stringify(message.error) !== "{}" && message.error.name !== "jsonld.ValidationError") {
+      if (message.request === "Create-n-Transfer" && message.error === "Unable to publish: Request failed with status code 429") {
         console.log(
           `${wallet_array[message.index].name} wallet ${
             wallet_array[message.index].public_key
