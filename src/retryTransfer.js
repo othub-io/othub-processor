@@ -1,6 +1,7 @@
 require("dotenv").config();
 const mysql = require("mysql");
 const DKGClient = require("dkg.js");
+const handleErrors = require("./handleErrors.js");
 
 const othubdb_connection = mysql.createConnection({
   host: process.env.DBHOST,
