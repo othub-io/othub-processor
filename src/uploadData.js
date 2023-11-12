@@ -115,6 +115,7 @@ module.exports = {
           return result;
         })
         .catch(async (error) => {
+          console.log(`1 ` +error)
           error_obj = {
             error: error,
             index: index,
@@ -162,6 +163,7 @@ module.exports = {
             });
         })
         .catch(async (error) => {
+          console.log(`1 ` +error)
           error_obj = {
             error: error,
             index: index,

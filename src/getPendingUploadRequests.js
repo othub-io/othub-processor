@@ -54,11 +54,13 @@ module.exports = {
             console.error("Error retrieving data:", error);
           });
 
+          console.log('1')
         if (Number(request.length) === 0) {
           console.log(`${network_array[i].network} has no pending requests.`);
           continue;
         }
 
+        console.log('2')
         let available_wallets = [];
         for (x = 0; x < wallet_array.length; x++) {
           query = `select txn_id,progress,approver,network,txn_data,keywords,epochs,updated_at,created_at,receiver,ual from txn_header where request = 'Create-n-Transfer' AND approver = ? AND network = ? order by updated_at desc LIMIT 1`;
@@ -87,7 +89,7 @@ module.exports = {
             timeDifference >= 600000
           ) {
             console.log(
-              `${wallet_array[x].name} ${wallet_array[x].public_key}: Processing for over 10 minutes. Rolling back to pending...`
+              `${wallet_array[x].name} wallet ${wallet_array[x].public_key}: Processing for over 10 minutes. Rolling back to pending...`
             );
             query = `UPDATE txn_header SET progress = ?, approver = ? WHERE approver = ? AND progress = ? AND request = 'Create-n-Transfer'`;
             params = [
@@ -110,6 +112,7 @@ module.exports = {
             continue;
           }
 
+          console.log('3')
           if (
             last_processed[0].progress === "TRANSFER-FAILED" &&
             timeDifference >= 60000
@@ -134,9 +137,10 @@ module.exports = {
               console.log(
                 `${wallet_array[x].name} ${wallet_array[x].public_key}: Transfer attempt failed 3 times. Abandoning transfer...`
               );
-              query = `UPDATE txn_header SET progress = ? WHERE progress = ? AND approver = ?`;
+              query = `UPDATE txn_header SET progress = ? WHERE progress in (?,?) AND approver = ?`;
               params = [
                 "ABANDONED",
+                "PROCESSING",
                 "TRANSFER-FAILED",
                 wallet_array[x].public_key,
               ];
@@ -155,7 +159,7 @@ module.exports = {
             }
 
             console.log(
-              `${wallet_array[x].name} ${wallet_array[x].public_key}: Retrying failed transfer ${retries[0].count}...`
+              `${wallet_array[x].name} wallet ${wallet_array[x].public_key}: Retrying failed transfer ${retries[0].count}...`
             );
 
             await retryTransfer.retryTransfer(last_processed[0]);
@@ -170,6 +174,7 @@ module.exports = {
           }
         }
 
+        console.log('4')
         console.log(
           `${network_array[i].network} has ${available_wallets.length} available wallets.`
         );
