@@ -105,18 +105,18 @@ module.exports = {
           wallet_array[message.index].public_key,
           null,
           "Create-n-Transfer",
-          data.network,
+          message.network,
           null,
           null,
           null,
-          dkg_create_result.UAL,
+          message.ual,
           null,
           null,
           null,
           null,
           null,
           null,
-          data.receiver,
+          message.receiver,
         ];
         await getOTHubData(query, params)
           .then((results) => {

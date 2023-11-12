@@ -118,7 +118,7 @@ module.exports = {
           error_obj = {
             error: error,
             index: index,
-            request: 'Create-n-Transfer'
+            request: "Create-n-Transfer",
           };
           throw new Error(JSON.stringify(error_obj));
         });
@@ -166,13 +166,16 @@ module.exports = {
             error: error,
             index: index,
             request: "Transfer",
+            ual: data.ual,
+            network: data.network,
+            receiver: data.receiver,
           };
           throw new Error(JSON.stringify(error_obj));
         });
       return;
     } catch (error) {
-      let message = JSON.parse(error.message)
-      await handleErrors.handleError(message)
+      let message = JSON.parse(error.message);
+      await handleErrors.handleError(message);
     }
   },
 };
