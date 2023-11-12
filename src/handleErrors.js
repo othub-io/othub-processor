@@ -67,11 +67,11 @@ module.exports = {
         return;
       }
 
-      if (message.request === "Create-n-Transfer" && message.error === "Unable to publish: Request failed with status code 429") {
+      if (message.request === "Create-n-Transfer") {
         console.log(
           `${wallet_array[message.index].name} wallet ${
             wallet_array[message.index].public_key
-          }: Create failed. Setting back to pending in 3 minutes...`
+          }: Create failed. ${message.error}. Setting back to pending in 3 minutes...`
         );
         await sleep(180000);
 
