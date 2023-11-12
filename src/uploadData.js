@@ -117,7 +117,7 @@ module.exports = {
         .catch(async (error) => {
           console.log(`1 ` +error)
           error_obj = {
-            error: error,
+            error: JSON.stringify(error),
             index: index,
             request: "Create-n-Transfer",
           };
