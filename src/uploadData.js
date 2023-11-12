@@ -166,7 +166,7 @@ module.exports = {
             error: error,
             index: index,
             request: "Transfer",
-            ual: data.ual,
+            ual: dkg_create_result.UAL,
             network: data.network,
             receiver: data.receiver,
           };

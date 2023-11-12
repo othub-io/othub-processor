@@ -127,6 +127,22 @@ module.exports = {
           .catch((error) => {
             console.error("Error retrieving data:", error);
           });
+
+        query = `UPDATE txn_header SET txn_description = ? WHERE progress = ? AND ual = ?`;
+        params = [
+          "TRANSFER RETRY ATTEMPT",
+          "TRANSFER-FAILED",
+          message.ual
+        ];
+        await getOTHubData(query, params)
+          .then((results) => {
+            //console.log('Query results:', results);
+            return results;
+            // Use the results in your variable or perform further operations
+          })
+          .catch((error) => {
+            console.error("Error retrieving data:", error);
+          });
         return;
       }
 
