@@ -120,6 +120,9 @@ module.exports={
                     error: error,
                     index: index,
                     request: "Transfer",
+                    ual: data.ual,
+                    network: data.network,
+                    receiver: data.receiver,
                   };
                   throw new Error(JSON.stringify(error_obj));
               });
