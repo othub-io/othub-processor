@@ -70,9 +70,9 @@ module.exports = {
         console.log(
           `${wallet_array[message.index].name} wallet ${
             wallet_array[message.index].public_key
-          }: Create failed. ${message.error}. Setting back to pending in 3 minutes...`
+          }: Create failed. ${message.error}. Reverting to pending in 1 minute...`
         );
-        await sleep(180000);
+        await sleep(60000);
 
         query = `UPDATE txn_header SET progress = ?, approver = ? WHERE approver = ? AND request = 'Create-n-Transfer' AND progress = ?`;
         params = [
