@@ -112,7 +112,7 @@ module.exports = {
 
           if (
             last_processed[0].progress === "TRANSFER-FAILED" &&
-            timeDifference >= 180000
+            timeDifference >= 60000
           ) {
             query = `select count(*) AS count from txn_header where request = 'Create-n-Transfer' AND approver = ? AND network = ? AND progress = ? order by updated_at desc LIMIT 5`;
             params = [
@@ -130,9 +130,9 @@ module.exports = {
                 console.error("Error retrieving data:", error);
               });
 
-            if (Number(retries[0].count) >= 5) {
+            if (Number(retries[0].count) >= 3) {
               console.log(
-                `${wallet_array[x].name} ${wallet_array[x].public_key}: Transfer attempt failed 5 times. Abandoning transfer...`
+                `${wallet_array[x].name} ${wallet_array[x].public_key}: Transfer attempt failed 3 times. Abandoning transfer...`
               );
               query = `UPDATE txn_header SET progress = ? WHERE progress = ? AND approver = ?`;
               params = [
