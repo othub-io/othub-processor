@@ -54,13 +54,11 @@ module.exports = {
             console.error("Error retrieving data:", error);
           });
 
-          console.log('1')
         if (Number(request.length) === 0) {
           console.log(`${network_array[i].network} has no pending requests.`);
           continue;
         }
 
-        console.log('2')
         let available_wallets = [];
         for (x = 0; x < wallet_array.length; x++) {
           query = `select txn_id,progress,approver,network,txn_data,keywords,epochs,updated_at,created_at,receiver,ual from txn_header where request = 'Create-n-Transfer' AND approver = ? AND network = ? order by updated_at desc LIMIT 1`;
@@ -112,16 +110,14 @@ module.exports = {
             continue;
           }
 
-          console.log('3')
           if (
             last_processed[0].progress === "TRANSFER-FAILED" &&
             timeDifference >= 60000
           ) {
-            query = `select count(*) AS count from txn_header where request = 'Create-n-Transfer' AND approver = ? AND network = ? AND progress = ? order by updated_at desc LIMIT 5`;
+            query = `select count(*) AS count from txn_header where request = 'Create-n-Transfer' AND approver = ? AND network = ? order by updated_at desc LIMIT 3`;
             params = [
               wallet_array[x].public_key,
-              network_array[i].network,
-              "TRANSFER-FAILED",
+              network_array[i].network
             ];
             retries = await getOTHubData(query, params)
               .then((results) => {
@@ -174,7 +170,6 @@ module.exports = {
           }
         }
 
-        console.log('4')
         console.log(
           `${network_array[i].network} has ${available_wallets.length} available wallets.`
         );
