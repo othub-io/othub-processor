@@ -41,14 +41,13 @@ async function getOTHubData(query, params) {
 module.exports = {
   handleError: async function handleError(message) {
     try {
-      console.log(JSON.stringify(message.error));
       let query;
       let params;
       if (message.error === "Safe mode validation error.") {
         console.log(
           `${wallet_array[message.index].name} wallet ${
             wallet_array[message.index].public_key
-          }: Create failed due to safe mode validation. Abandoning...`
+          }: Create failed. ${message.error} Abandoning...`
         );
         query = `UPDATE txn_header SET progress = ?, txn_data = ? WHERE approver = ? AND request = 'Create-n-Transfer' AND progress = ?`;
         params = [
@@ -96,7 +95,7 @@ module.exports = {
         console.log(
           `${wallet_array[message.index].name} wallet ${
             wallet_array[message.index].public_key
-          }: Transfer failed. Retrying in 1 minute...`
+          }: Transfer failed. ${message.error}. Retrying in 1 minute...`
         );
         await sleep(60000);
 
@@ -151,7 +150,7 @@ module.exports = {
       console.log(
         `${wallet_array[message.index].name} wallet ${
           wallet_array[message.index].public_key
-        }: Unexpected Error. Abandoning...`
+        }: Unexpected Error. ${message.error}. Abandoning...`
       );
       query = `UPDATE txn_header SET progress = ?, txn_data = ? WHERE approver = ? AND request = 'Create-n-Transfer' AND progress = ?`;
       params = [
