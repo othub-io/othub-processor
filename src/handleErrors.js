@@ -41,8 +41,9 @@ async function getOTHubData(query, params) {
 module.exports = {
   handleError: async function handleError(message) {
     try {
-      console.log(JSON.stringify(message.error));
-
+      console.log(JSON.stringify(message));
+      let query;
+      let params;
       if (message.error.name === "jsonld.ValidationError") {
         console.log(
           `${wallet_array[message.index].name} wallet ${
@@ -64,8 +65,8 @@ module.exports = {
             console.error("Error retrieving data:", error);
           });
         return;
-      } 
-      
+      }
+
       if (message.request === "Create-n-Transfer") {
         console.log(
           `${wallet_array[message.index].name} wallet ${
@@ -128,11 +129,12 @@ module.exports = {
             console.error("Error retrieving data:", error);
           });
 
-        query = `UPDATE txn_header SET txn_description = ? WHERE progress = ? AND ual = ?`;
+        query = `UPDATE txn_header SET updated_at = ?, txn_description = ? WHERE progress = ? AND ual = ? AND request = 'Create-n-Transfer'`;
         params = [
+          new Date(),
           "TRANSFER RETRY ATTEMPT",
           "TRANSFER-FAILED",
-          message.ual
+          message.ual,
         ];
         await getOTHubData(query, params)
           .then((results) => {
