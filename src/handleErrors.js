@@ -67,7 +67,7 @@ module.exports = {
         return;
       }
 
-      if (message.request === "Create-n-Transfer"  && message.error !== "") {
+      if (message.request === "Create-n-Transfer"  && JSON.stringify(message.error) !== "{}") {
         console.log(
           `${wallet_array[message.index].name} wallet ${
             wallet_array[message.index].public_key
