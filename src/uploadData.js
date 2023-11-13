@@ -172,6 +172,7 @@ module.exports = {
           await sleep(60000);
 
           error_obj = {
+            error: error.message,
             index: index,
             request: "Transfer",
             ual: dkg_create_result.UAL,
