@@ -92,6 +92,15 @@ module.exports = {
       }
 
       if (message.request === "Transfer") {
+        console.log(
+            `${wallet_array[message.index].name} wallet ${
+              wallet_array[message.index].public_key
+            }: Transfer failed. ${JSON.stringify(
+              error
+            )}. Retrying in 1 minute...`
+          );
+          await sleep(60000);
+
         query = `INSERT INTO txn_header (txn_id, progress, approver, api_key, request, network, app_name, txn_description, txn_data, ual, keywords, state, txn_hash, txn_fee, trac_fee, epochs, receiver) VALUES (UUID(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
         params = [
           "TRANSFER-FAILED",
