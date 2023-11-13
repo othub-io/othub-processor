@@ -43,7 +43,7 @@ module.exports = {
     try {
       let query;
       let params;
-      if (message.error === "Safe mode validation error.") {
+      if (message.error === "Safe mode validation error." || message.error === "File format is corrupted, no n-quads are extracted.") {
         console.log(
           `${wallet_array[message.index].name} wallet ${
             wallet_array[message.index].public_key
