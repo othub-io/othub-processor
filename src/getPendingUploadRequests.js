@@ -155,7 +155,7 @@ module.exports = {
             }
 
             console.log(
-              `${wallet_array[x].name} wallet ${wallet_array[x].public_key}: Retrying failed transfer ${retries[0].count}...`
+              `${wallet_array[x].name} wallet ${wallet_array[x].public_key}: Retrying failed transfer ${retries.length}...`
             );
 
             await retryTransfer.retryTransfer(last_processed[0]);
