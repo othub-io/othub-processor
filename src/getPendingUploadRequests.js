@@ -114,7 +114,7 @@ module.exports = {
             last_processed[0].progress === "TRANSFER-FAILED" &&
             timeDifference >= 60000
           ) {
-            query = `select count(*) AS count from txn_header where request = 'Create-n-Transfer' AND approver = ? AND network = ? order by updated_at desc LIMIT 3`;
+            query = `select progress from txn_header where request = 'Create-n-Transfer' AND approver = ? AND network = ? order by updated_at desc LIMIT 3`;
             params = [
               wallet_array[x].public_key,
               network_array[i].network
@@ -129,7 +129,7 @@ module.exports = {
                 console.error("Error retrieving data:", error);
               });
 
-            if (Number(retries[0].count) >= 3) {
+            if (retries[0].progress === 'TRANSFER-FAILED' && retries[1].progress === 'TRANSFER-FAILED' && retries[2].progress === 'TRANSFER-FAILED') {
               console.log(
                 `${wallet_array[x].name} ${wallet_array[x].public_key}: Transfer attempt failed 3 times. Abandoning transfer...`
               );
