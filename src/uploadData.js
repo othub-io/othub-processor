@@ -162,8 +162,16 @@ module.exports = {
             });
         })
         .catch(async (error) => {
+          console.log(
+            `${wallet_array[index].name} wallet ${
+              wallet_array[index].public_key
+            }: Transfer failed. ${JSON.stringify(
+              error
+            )}. Retrying in 1 minute...`
+          );
+          await sleep(60000);
+
           error_obj = {
-            error: error.message,
             index: index,
             request: "Transfer",
             ual: dkg_create_result.UAL,

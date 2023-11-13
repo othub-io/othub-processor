@@ -92,13 +92,6 @@ module.exports = {
       }
 
       if (message.request === "Transfer") {
-        console.log(
-          `${wallet_array[message.index].name} wallet ${
-            wallet_array[message.index].public_key
-          }: Transfer failed. ${JSON.stringify(message.error)}. Retrying in 1 minute...`
-        );
-        await sleep(60000);
-
         query = `INSERT INTO txn_header (txn_id, progress, approver, api_key, request, network, app_name, txn_description, txn_data, ual, keywords, state, txn_hash, txn_fee, trac_fee, epochs, receiver) VALUES (UUID(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
         params = [
           "TRANSFER-FAILED",
@@ -117,23 +110,6 @@ module.exports = {
           null,
           null,
           message.receiver,
-        ];
-        await getOTHubData(query, params)
-          .then((results) => {
-            //console.log('Query results:', results);
-            return results;
-            // Use the results in your variable or perform further operations
-          })
-          .catch((error) => {
-            console.error("Error retrieving data:", error);
-          });
-
-        query = `UPDATE txn_header SET updated_at = ?, txn_description = ? WHERE progress = ? AND ual = ? AND request = 'Create-n-Transfer'`;
-        params = [
-          new Date(),
-          "TRANSFER RETRY ATTEMPT",
-          "TRANSFER-FAILED",
-          message.ual,
         ];
         await getOTHubData(query, params)
           .then((results) => {
