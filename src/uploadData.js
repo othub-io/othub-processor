@@ -162,7 +162,6 @@ module.exports = {
             });
         })
         .catch(async (error) => {
-          console.log(`1 ` +error)
           error_obj = {
             error: error.message,
             index: index,
