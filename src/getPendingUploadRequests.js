@@ -129,6 +129,7 @@ module.exports = {
                 console.error("Error retrieving data:", error);
               });
 
+            console.log(JSON.stringify(retries))
             if (retries[0].progress === 'TRANSFER-FAILED' && retries[1].progress === 'TRANSFER-FAILED' && retries[2].progress === 'TRANSFER-FAILED') {
               console.log(
                 `${wallet_array[x].name} ${wallet_array[x].public_key}: Transfer attempt failed 3 times. Abandoning transfer...`
@@ -155,7 +156,7 @@ module.exports = {
             }
 
             console.log(
-              `${wallet_array[x].name} wallet ${wallet_array[x].public_key}: Retrying failed transfer ${retries.length}...`
+              `${wallet_array[x].name} wallet ${wallet_array[x].public_key}: Retrying failed transfer...`
             );
 
             await retryTransfer.retryTransfer(last_processed[0]);
