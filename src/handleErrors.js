@@ -96,7 +96,7 @@ module.exports = {
             `${wallet_array[message.index].name} wallet ${
               wallet_array[message.index].public_key
             }: Transfer failed. ${JSON.stringify(
-              error
+                message.error
             )}. Retrying in 1 minute...`
           );
           await sleep(60000);
