@@ -95,9 +95,7 @@ module.exports = {
         console.log(
             `${wallet_array[message.index].name} wallet ${
               wallet_array[message.index].public_key
-            }: Transfer failed. ${JSON.stringify(
-                message.error
-            )}. Retrying in 1 minute...`
+            }: Transfer failed. ${message.error}. Retrying in 1 minute...`
           );
           await sleep(60000);
 

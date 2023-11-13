@@ -61,7 +61,7 @@ module.exports = {
 
         let available_wallets = [];
         for (const wallet of wallet_array) {
-          query = `select txn_id,progress,approver,network,txn_data,keywords,epochs,updated_at,created_at,receiver,ual from txn_header where request = 'Create-n-Transfer' AND approver = ? AND network = ? order by updated_at desc LIMIT 3`;
+          query = `select txn_id,progress,approver,network,txn_data,keywords,epochs,updated_at,created_at,receiver,ual from txn_header where request = 'Create-n-Transfer' AND approver = ? AND network = ? order by updated_at desc LIMIT 5`;
           params = [wallet.public_key, blockchain.network];
           last_processed = await getOTHubData(query, params)
             .then((results) => {
@@ -105,7 +105,7 @@ module.exports = {
             continue;
           }
 
-          if (last_processed[2].progress === "RETRYING-TRANSFER") {
+          if (last_processed[4].progress === "RETRYING-TRANSFER") {
             console.log(
               `${wallet.name} ${wallet.public_key}: Transfer attempt failed 3 times. Abandoning transfer...`
             );
