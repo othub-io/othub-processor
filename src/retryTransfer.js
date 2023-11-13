@@ -63,6 +63,18 @@ async function getOTHubData(query, params) {
 module.exports = {
   retryTransfer: async function retryTransfer(data) {
     try {
+      let query = `UPDATE txn_header SET progress = ? WHERE txn_id = ?`;
+      let params = ["RETRYING-TRANSFER", data.txn_id];
+      await getOTHubData(query, params)
+        .then((results) => {
+          //console.log('Query results:', results);
+          //return results;
+          // Use the results in your variable or perform further operations
+        })
+        .catch((error) => {
+          console.error("Error retrieving data:", error);
+        });
+
       let index = wallet_array.findIndex(
         (obj) => obj.public_key == data.approver
       );
@@ -99,8 +111,8 @@ module.exports = {
             `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Transfered ${data.ual} to ${data.receiver}.`
           );
 
-          query = `UPDATE txn_header SET progress = ? WHERE progress = ? AND approver = ?`;
-          params = ["COMPLETE", "PROCESSING", wallet_array[index].public_key];
+          query = `UPDATE txn_header SET progress = ? WHERE progress in(?,?) AND approver = ?`;
+          params = ["COMPLETE", "PROCESSING", "RETRYING-TRANSFER",wallet_array[index].public_key];
           await getOTHubData(query, params)
             .then((results) => {
               //console.log('Query results:', results);
@@ -112,16 +124,8 @@ module.exports = {
             });
         })
         .catch(async (error) => {
-          console.log(
-            `${wallet_array[index].name} wallet ${
-              wallet_array[index].public_key
-            }: Transfer failed. ${JSON.stringify(
-              error
-            )}. Retrying in 1 minute...`
-          );
-          await sleep(60000);
-
           error_obj = {
+            error: error.message,
             index: index,
             request: "Transfer",
             ual: data.ual,

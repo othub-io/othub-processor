@@ -61,7 +61,7 @@ module.exports = {
 
         let available_wallets = [];
         for (const wallet of wallet_array) {
-          query = `select txn_id,progress,approver,network,txn_data,keywords,epochs,updated_at,created_at,receiver,ual from txn_header where request = 'Create-n-Transfer' AND approver = ? AND network = ? order by updated_at desc LIMIT 1`;
+          query = `select txn_id,progress,approver,network,txn_data,keywords,epochs,updated_at,created_at,receiver,ual from txn_header where request = 'Create-n-Transfer' AND approver = ? AND network = ? order by updated_at desc LIMIT 3`;
           params = [wallet.public_key, blockchain.network];
           last_processed = await getOTHubData(query, params)
             .then((results) => {
@@ -90,11 +90,31 @@ module.exports = {
               `${wallet.name} wallet ${wallet.public_key}: Processing for over 10 minutes. Rolling back to pending...`
             );
             query = `UPDATE txn_header SET progress = ?, approver = ? WHERE approver = ? AND progress = ? AND request = 'Create-n-Transfer'`;
+            params = ["PENDING", null, wallet.public_key, "PROCESSING"];
+            await getOTHubData(query, params)
+              .then((results) => {
+                //console.log('Query results:', results);
+                return results;
+                // Use the results in your variable or perform further operations
+              })
+              .catch((error) => {
+                console.error("Error retrieving data:", error);
+              });
+
+            available_wallets.push(wallet);
+            continue;
+          }
+
+          if (last_processed[2].progress === "RETRYING-TRANSFER") {
+            console.log(
+              `${wallet.name} ${wallet.public_key}: Transfer attempt failed 3 times. Abandoning transfer...`
+            );
+            query = `UPDATE txn_header SET progress = ? WHERE progress in (?,?) AND approver = ?`;
             params = [
-              "PENDING",
-              null,
-              wallet.public_key,
+              "ABANDONED",
               "PROCESSING",
+              "RETRYING-TRANSFER",
+              wallet.public_key,
             ];
             await getOTHubData(query, params)
               .then((results) => {
@@ -110,51 +130,7 @@ module.exports = {
             continue;
           }
 
-          if (
-            last_processed[0].progress === "TRANSFER-FAILED" &&
-            timeDifference >= 60000
-          ) {
-            query = `select progress from txn_header where request = 'Create-n-Transfer' AND approver = ? AND network = ? order by updated_at desc LIMIT 3`;
-            params = [
-              wallet.public_key,
-              blockchain.network
-            ];
-            retries = await getOTHubData(query, params)
-              .then((results) => {
-                //console.log('Query results:', results);
-                return results;
-                // Use the results in your variable or perform further operations
-              })
-              .catch((error) => {
-                console.error("Error retrieving data:", error);
-              });
-
-            console.log(JSON.stringify(retries))
-            if (retries[0].progress === 'TRANSFER-FAILED' && retries[1].progress === 'TRANSFER-FAILED' && retries[2].progress === 'TRANSFER-FAILED') {
-              console.log(
-                `${wallet.name} ${wallet.public_key}: Transfer attempt failed 3 times. Abandoning transfer...`
-              );
-              query = `UPDATE txn_header SET progress = ? WHERE progress in (?,?) AND approver = ?`;
-              params = [
-                "ABANDONED",
-                "PROCESSING",
-                "TRANSFER-FAILED",
-                wallet.public_key,
-              ];
-              await getOTHubData(query, params)
-                .then((results) => {
-                  //console.log('Query results:', results);
-                  return results;
-                  // Use the results in your variable or perform further operations
-                })
-                .catch((error) => {
-                  console.error("Error retrieving data:", error);
-                });
-
-              available_wallets.push(wallet);
-              continue;
-            }
-
+          if (last_processed[0].progress === "TRANSFER-FAILED") {
             console.log(
               `${wallet.name} wallet ${wallet.public_key}: Retrying failed transfer...`
             );
