@@ -163,7 +163,7 @@ module.exports = {
         })
         .catch(async (error) => {
           error_obj = {
-            error: JSON.stringify(error.message),
+            error: error.message,
             index: index,
             request: "Transfer",
             ual: dkg_create_result.UAL,
