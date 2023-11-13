@@ -183,6 +183,7 @@ module.exports = {
         });
       return;
     } catch (error) {
+        console.log('hfugerhgr' +error)
       let message = JSON.parse(error.message);
       await handleErrors.handleError(message);
     }
