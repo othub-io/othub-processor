@@ -32,6 +32,12 @@ const mainnet_dkg = new DKGClient(mainnet_node_options);
 
 const wallet_array = JSON.parse(process.env.WALLET_ARRAY);
 
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 function executeOTHubQuery(query, params) {
   return new Promise((resolve, reject) => {
     othubdb_connection.query(query, params, (error, results) => {
@@ -106,14 +112,14 @@ module.exports = {
             });
         })
         .catch(async (error) => {
-            console.log(
-                `${wallet_array[index].name} wallet ${
-                  wallet_array[index].public_key
-                }: Transfer failed. ${JSON.stringify(
-                  error
-                )}. Retrying in 1 minute...`
-              );
-              await sleep(60000);
+          console.log(
+            `${wallet_array[index].name} wallet ${
+              wallet_array[index].public_key
+            }: Transfer failed. ${JSON.stringify(
+              error
+            )}. Retrying in 1 minute...`
+          );
+          await sleep(60000);
 
           error_obj = {
             index: index,
@@ -124,7 +130,7 @@ module.exports = {
           };
           throw new Error(JSON.stringify(error_obj));
         });
-        return;
+      return;
     } catch (error) {
       let message = JSON.parse(error.message);
       await handleErrors.handleError(message);

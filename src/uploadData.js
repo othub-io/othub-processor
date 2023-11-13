@@ -32,6 +32,12 @@ const mainnet_dkg = new DKGClient(mainnet_node_options);
 
 const wallet_array = JSON.parse(process.env.WALLET_ARRAY);
 
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 function executeOTHubQuery(query, params) {
   return new Promise((resolve, reject) => {
     othubdb_connection.query(query, params, (error, results) => {
@@ -183,7 +189,6 @@ module.exports = {
         });
       return;
     } catch (error) {
-        console.log('hfugerhgr' +error)
       let message = JSON.parse(error.message);
       await handleErrors.handleError(message);
     }
