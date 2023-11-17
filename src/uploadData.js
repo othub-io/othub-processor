@@ -129,6 +129,21 @@ module.exports = {
           throw new Error(JSON.stringify(error_obj));
         });
 
+        query = `UPDATE txn_header SET progress = ?, ual = ?, state = ? WHERE txn_id = ?`;
+          params = [
+            "CREATED",
+            dkg_create_result.UAL,
+            dkg_create_result.publicAssertionId,
+            data.txn_id,
+          ];
+          await getOTHubData(query, params)
+            .then((results) => {
+              return results;
+            })
+            .catch((error) => {
+              console.error("Error retrieving data:", error);
+            });
+
       console.log(
         `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Created UAL ${dkg_create_result.UAL}. Transfering to ${data.receiver}...`
       );
@@ -152,11 +167,9 @@ module.exports = {
             `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Transfered ${dkg_create_result.UAL} to ${data.receiver}.`
           );
 
-          query = `UPDATE txn_header SET progress = ?, ual = ?, state = ? WHERE txn_id = ?`;
+          query = `UPDATE txn_header SET progress = ? WHERE txn_id = ?`;
           params = [
             "COMPLETE",
-            dkg_create_result.UAL,
-            dkg_create_result.publicAssertionId,
             data.txn_id,
           ];
           await getOTHubData(query, params)
