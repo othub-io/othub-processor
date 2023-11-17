@@ -56,7 +56,6 @@ module.exports = {
 
         if (Number(request.length) === 0) {
           console.log(`${blockchain.network} has no pending requests.`);
-          continue;
         }
 
         let available_wallets = [];
