@@ -54,10 +54,6 @@ module.exports = {
             console.error("Error retrieving data:", error);
           });
 
-        if (Number(request.length) === 0) {
-          console.log(`${blockchain.network} has no pending requests.`);
-        }
-
         let available_wallets = [];
         for (const wallet of wallet_array) {
           query = `select txn_id,progress,approver,network,txn_data,keywords,epochs,updated_at,created_at,receiver,ual from txn_header where request = 'Create-n-Transfer' AND approver = ? AND network = ? order by updated_at desc LIMIT 5`;
@@ -150,12 +146,16 @@ module.exports = {
           `${blockchain.network} has ${available_wallets.length} available wallets.`
         );
 
-        if (Number(available_wallets.length) === 0) {
+        if (Number(available_wallets.length) === 0 ) {
           continue;
         }
 
-        request[0].approver = available_wallets[0].public_key;
-        pending_requests.push(request[0]);
+        if (Number(request.length) === 0) {
+          console.log(`${blockchain.network} has no pending requests.`);
+        }else{
+          request[0].approver = available_wallets[0].public_key;
+          pending_requests.push(request[0]);
+        }
       }
 
       return pending_requests;
