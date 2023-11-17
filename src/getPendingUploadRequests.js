@@ -77,6 +77,7 @@ module.exports = {
           let currentTimestamp = new Date();
           let timeDifference = currentTimestamp - updatedAtTimestamp;
 
+          //create nhung up and never happened
           if (
             last_processed[0].progress === "PROCESSING" &&
             timeDifference >= 600000
@@ -100,14 +101,15 @@ module.exports = {
             continue;
           }
 
+          //3 records of retrying a transfer (index 0 is 4th failed-transfer txn)
           if (last_processed[4].progress === "RETRYING-TRANSFER") {
             console.log(
               `${wallet.name} ${wallet.public_key}: Transfer attempt failed 3 times. Abandoning transfer...`
             );
             query = `UPDATE txn_header SET progress = ? WHERE progress in (?,?) AND approver = ?`;
             params = [
-              "ABANDONED",
-              "PROCESSING",
+              "TRANSFER-ABANDONED",
+              "CREATED",
               "RETRYING-TRANSFER",
               wallet.public_key,
             ];
@@ -125,6 +127,7 @@ module.exports = {
             continue;
           }
 
+          //last transfer attempt failed and there were 3 retry failures yet
           if (last_processed[0].progress === "TRANSFER-FAILED") {
             console.log(
               `${wallet.name} wallet ${wallet.public_key}: Retrying failed transfer...`
@@ -134,8 +137,10 @@ module.exports = {
             continue;
           }
 
+          //not processing, not transfering, not retrying transfer
           if (
             last_processed[0].progress !== "PROCESSING" &&
+            last_processed[0].progress !== "CREATED" &&
             last_processed[0].progress !== "TRANSFER-FAILED"
           ) {
             available_wallets.push(wallet);

@@ -137,7 +137,7 @@ module.exports = {
       );
       query = `UPDATE txn_header SET progress = ?, txn_data = ? WHERE approver = ? AND request = 'Create-n-Transfer' AND progress = ?`;
       params = [
-        "ABANDONED",
+        "CREATE-ABANDONED",
         `{"data":"bad"}`,
         wallet_array[message.index].public_key,
         "PROCESSING",
