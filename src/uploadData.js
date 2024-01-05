@@ -87,12 +87,12 @@ module.exports = {
       );
 
       let dkg = testnet_dkg;
-      if (data.network === "otp::testnet") {
+      if (data.network === "otp::20430" || data.network === "gnosis::10200") {
         dkg = testnet_dkg;
       }
 
       if (
-        data.network === "otp::mainnet" &&
+        (data.network === "otp::2043" || data.network === "gnosis::100") &&
         data.api_key === process.env.MASTER_KEY
       ) {
         dkg = mainnet_dkg;
