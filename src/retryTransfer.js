@@ -78,19 +78,23 @@ module.exports = {
       );
 
       let dkg = testnet_dkg;
-      if (data.network === "otp::20430" || data.network === "gnosis::10200") {
+      let environment;
+      if (data.network === "otp:20430" || data.network === "gnosis:10200") {
         dkg = testnet_dkg;
+        environment = "testnet"
       }
 
       if (
-        (data.network === "otp::2043" || data.network === "gnosis::100") &&
+        (data.network === "otp:2043" || data.network === "gnosis:100") &&
         data.api_key === process.env.MASTER_KEY
       ) {
         dkg = mainnet_dkg;
+        environment = "mainnet"
       }
 
       await dkg.asset
         .transfer(data.ual, data.receiver, {
+          environment: environment,
           maxNumberOfRetries: 30,
           frequency: 2,
           contentType: "all",

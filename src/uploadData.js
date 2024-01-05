@@ -32,12 +32,6 @@ const mainnet_dkg = new DKGClient(mainnet_node_options);
 
 const wallet_array = JSON.parse(process.env.WALLET_ARRAY);
 
-function sleep(ms) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-}
-
 function executeOTHubQuery(query, params) {
   return new Promise((resolve, reject) => {
     othubdb_connection.query(query, params, (error, results) => {
@@ -87,15 +81,18 @@ module.exports = {
       );
 
       let dkg = testnet_dkg;
-      if (data.network === "otp::20430" || data.network === "gnosis::10200") {
+      let environment;
+      if (data.network === "otp:20430" || data.network === "gnosis:10200") {
         dkg = testnet_dkg;
+        environment = "testnet"
       }
 
       if (
-        (data.network === "otp::2043" || data.network === "gnosis::100") &&
+        (data.network === "otp:2043" || data.network === "gnosis:100") &&
         data.api_key === process.env.MASTER_KEY
       ) {
         dkg = mainnet_dkg;
+        environment = "mainnet"
       }
 
       let dkg_create_result = await dkg.asset
@@ -104,6 +101,7 @@ module.exports = {
             public: dkg_txn_data,
           },
           {
+            environment: environment,
             epochsNum: data.epochs,
             maxNumberOfRetries: 30,
             frequency: 2,
@@ -150,6 +148,7 @@ module.exports = {
 
       await dkg.asset
         .transfer(dkg_create_result.UAL, data.receiver, {
+          environment: environment,
           epochsNum: data.epochs,
           maxNumberOfRetries: 30,
           frequency: 2,
