@@ -102,29 +102,31 @@ module.exports = {
           }
 
           //3 records of retrying a transfer (index 0 is 4th failed-transfer txn)
-          if (last_processed[4].progress === "RETRYING-TRANSFER") {
-            console.log(
-              `${wallet.name} ${wallet.public_key}: Transfer attempt failed 3 times. Abandoning transfer...`
-            );
-            query = `UPDATE txn_header SET progress = ? WHERE progress in (?,?) AND approver = ?`;
-            params = [
-              "TRANSFER-ABANDONED",
-              "CREATED",
-              "RETRYING-TRANSFER",
-              wallet.public_key,
-            ];
-            await getOTHubData(query, params)
-              .then((results) => {
-                //console.log('Query results:', results);
-                return results;
-                // Use the results in your variable or perform further operations
-              })
-              .catch((error) => {
-                console.error("Error retrieving data:", error);
-              });
-
-            available_wallets.push(wallet);
-            continue;
+          if(last_processed[4]){
+            if (last_processed[4].progress === "RETRYING-TRANSFER") {
+              console.log(
+                `${wallet.name} ${wallet.public_key}: Transfer attempt failed 3 times. Abandoning transfer...`
+              );
+              query = `UPDATE txn_header SET progress = ? WHERE progress in (?,?) AND approver = ?`;
+              params = [
+                "TRANSFER-ABANDONED",
+                "CREATED",
+                "RETRYING-TRANSFER",
+                wallet.public_key,
+              ];
+              await getOTHubData(query, params)
+                .then((results) => {
+                  //console.log('Query results:', results);
+                  return results;
+                  // Use the results in your variable or perform further operations
+                })
+                .catch((error) => {
+                  console.error("Error retrieving data:", error);
+                });
+  
+              available_wallets.push(wallet);
+              continue;
+            }
           }
 
           //last transfer attempt failed and there were 3 retry failures yet
