@@ -1,38 +1,10 @@
 require("dotenv").config();
-const mysql = require("mysql");
 const retryTransfer = require("./retryTransfer.js");
-
-const othubdb_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.OTHUB_DB,
-});
+const queryTypes = require("../util/queryTypes");
+const queryDB = queryTypes.queryDB();
 
 const network_array = JSON.parse(process.env.SUPPORTED_NETWORKS);
 const wallet_array = JSON.parse(process.env.WALLET_ARRAY);
-
-function executeOTHubQuery(query, params) {
-  return new Promise((resolve, reject) => {
-    othubdb_connection.query(query, params, (error, results) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(results);
-      }
-    });
-  });
-}
-
-async function getOTHubData(query, params) {
-  try {
-    const results = await executeOTHubQuery(query, params);
-    return results;
-  } catch (error) {
-    console.error("Error executing query:", error);
-    throw error;
-  }
-}
 
 module.exports = {
   getPendingUploadRequests: async function getPendingUploadRequests() {
@@ -41,10 +13,11 @@ module.exports = {
 
       let pending_requests = [];
       for (const blockchain of network_array) {
-        sqlQuery =
+        query =
           "select txn_id,progress,approver,network,txn_data,keywords,epochs,updated_at,created_at,receiver,api_key FROM txn_header where progress = ? and network = ? and request = 'Create-n-Transfer' ORDER BY created_at ASC LIMIT 1";
         params = ["PENDING", blockchain.network];
-        let request = await getOTHubData(sqlQuery, params)
+        let request = await queryDB
+          .getData(query, params)
           .then((results) => {
             //console.log('Query results:', results);
             return results;
@@ -58,7 +31,8 @@ module.exports = {
         for (const wallet of wallet_array) {
           query = `select txn_id,progress,approver,network,txn_data,keywords,epochs,updated_at,created_at,receiver,ual from txn_header where request = 'Create-n-Transfer' AND approver = ? AND network = ? order by updated_at desc LIMIT 5`;
           params = [wallet.public_key, blockchain.network];
-          last_processed = await getOTHubData(query, params)
+          last_processed = await queryDB
+            .getData(query, params)
             .then((results) => {
               //console.log('Query results:', results);
               return results;
@@ -87,7 +61,8 @@ module.exports = {
             );
             query = `UPDATE txn_header SET progress = ?, approver = ? WHERE approver = ? AND progress = ? AND request = 'Create-n-Transfer'`;
             params = ["PENDING", null, wallet.public_key, "PROCESSING"];
-            await getOTHubData(query, params)
+            await queryDB
+              .getData(query, params)
               .then((results) => {
                 //console.log('Query results:', results);
                 return results;
@@ -102,7 +77,7 @@ module.exports = {
           }
 
           //3 records of retrying a transfer (index 0 is 4th failed-transfer txn)
-          if(last_processed[4]){
+          if (last_processed[4]) {
             if (last_processed[4].progress === "RETRYING-TRANSFER") {
               console.log(
                 `${wallet.name} ${wallet.public_key}: Transfer attempt failed 3 times. Abandoning transfer...`
@@ -114,7 +89,8 @@ module.exports = {
                 "RETRYING-TRANSFER",
                 wallet.public_key,
               ];
-              await getOTHubData(query, params)
+              await queryDB
+                .getData(query, params)
                 .then((results) => {
                   //console.log('Query results:', results);
                   return results;
@@ -123,7 +99,7 @@ module.exports = {
                 .catch((error) => {
                   console.error("Error retrieving data:", error);
                 });
-  
+
               available_wallets.push(wallet);
               continue;
             }
@@ -153,13 +129,13 @@ module.exports = {
           `${blockchain.network} has ${available_wallets.length} available wallets.`
         );
 
-        if (Number(available_wallets.length) === 0 ) {
+        if (Number(available_wallets.length) === 0) {
           continue;
         }
 
         if (Number(request.length) === 0) {
           console.log(`${blockchain.network} has no pending requests.`);
-        }else{
+        } else {
           request[0].approver = available_wallets[0].public_key;
           pending_requests.push(request[0]);
         }
