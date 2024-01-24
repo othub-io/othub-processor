@@ -1,12 +1,6 @@
 require("dotenv").config();
-const mysql = require("mysql");
-
-const othubdb_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.OTHUB_DB,
-});
+const queryTypes = require("../util/queryTypes");
+const queryDB = queryTypes.queryDB();
 
 const wallet_array = JSON.parse(process.env.WALLET_ARRAY);
 
@@ -16,34 +10,15 @@ function sleep(ms) {
   });
 }
 
-function executeOTHubQuery(query, params) {
-  return new Promise((resolve, reject) => {
-    othubdb_connection.query(query, params, (error, results) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(results);
-      }
-    });
-  });
-}
-
-async function getOTHubData(query, params) {
-  try {
-    const results = await executeOTHubQuery(query, params);
-    return results;
-  } catch (error) {
-    console.error("Error executing query:", error);
-    throw error;
-  }
-}
-
 module.exports = {
   handleError: async function handleError(message) {
     try {
       let query;
       let params;
-      if (message.error === "Safe mode validation error." || message.error === "File format is corrupted, no n-quads are extracted.") {
+      if (
+        message.error === "Safe mode validation error." ||
+        message.error === "File format is corrupted, no n-quads are extracted."
+      ) {
         console.log(
           `${wallet_array[message.index].name} wallet ${
             wallet_array[message.index].public_key
@@ -56,9 +31,12 @@ module.exports = {
           wallet_array[message.index].public_key,
           "PROCESSING",
         ];
-        await getOTHubData(query, params)
+        await queryDB
+          .getData(query, params)
           .then((results) => {
+            //console.log('Query results:', results);
             return results;
+            // Use the results in your variable or perform further operations
           })
           .catch((error) => {
             console.error("Error retrieving data:", error);
@@ -70,7 +48,9 @@ module.exports = {
         console.log(
           `${wallet_array[message.index].name} wallet ${
             wallet_array[message.index].public_key
-          }: Create failed. ${message.error}. Reverting to pending in 1 minute...`
+          }: Create failed. ${
+            message.error
+          }. Reverting to pending in 1 minute...`
         );
         await sleep(60000);
 
@@ -81,9 +61,12 @@ module.exports = {
           wallet_array[message.index].public_key,
           "PROCESSING",
         ];
-        await getOTHubData(query, params)
+        await queryDB
+          .getData(query, params)
           .then((results) => {
+            //console.log('Query results:', results);
             return results;
+            // Use the results in your variable or perform further operations
           })
           .catch((error) => {
             console.error("Error retrieving data:", error);
@@ -93,11 +76,11 @@ module.exports = {
 
       if (message.request === "Transfer") {
         console.log(
-            `${wallet_array[message.index].name} wallet ${
-              wallet_array[message.index].public_key
-            }: Transfer failed. ${message.error}. Retrying in 1 minute...`
-          );
-          await sleep(60000);
+          `${wallet_array[message.index].name} wallet ${
+            wallet_array[message.index].public_key
+          }: Transfer failed. ${message.error}. Retrying in 1 minute...`
+        );
+        await sleep(60000);
 
         query = `INSERT INTO txn_header (txn_id, progress, approver, api_key, request, network, app_name, txn_description, txn_data, ual, keywords, state, txn_hash, txn_fee, trac_fee, epochs, receiver) VALUES (UUID(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
         params = [
@@ -118,7 +101,8 @@ module.exports = {
           null,
           message.receiver,
         ];
-        await getOTHubData(query, params)
+        await queryDB
+          .getData(query, params)
           .then((results) => {
             //console.log('Query results:', results);
             return results;
@@ -142,9 +126,12 @@ module.exports = {
         wallet_array[message.index].public_key,
         "PROCESSING",
       ];
-      await getOTHubData(query, params)
+      await queryDB
+        .getData(query, params)
         .then((results) => {
+          //console.log('Query results:', results);
           return results;
+          // Use the results in your variable or perform further operations
         })
         .catch((error) => {
           console.error("Error retrieving data:", error);

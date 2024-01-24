@@ -1,14 +1,8 @@
 require("dotenv").config();
-const mysql = require("mysql");
+const queryTypes = require("../util/queryTypes");
+const queryDB = queryTypes.queryDB();
 const DKGClient = require("dkg.js");
 const handleErrors = require("./handleErrors.js");
-
-const othubdb_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.OTHUB_DB,
-});
 
 const OT_NODE_TESTNET_PORT = process.env.OT_NODE_TESTNET_PORT;
 const OT_NODE_MAINNET_PORT = process.env.OT_NODE_MAINNET_PORT;
@@ -32,28 +26,6 @@ const mainnet_dkg = new DKGClient(mainnet_node_options);
 
 const wallet_array = JSON.parse(process.env.WALLET_ARRAY);
 
-function executeOTHubQuery(query, params) {
-  return new Promise((resolve, reject) => {
-    othubdb_connection.query(query, params, (error, results) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(results);
-      }
-    });
-  });
-}
-
-async function getOTHubData(query, params) {
-  try {
-    const results = await executeOTHubQuery(query, params);
-    return results;
-  } catch (error) {
-    console.error("Error executing query:", error);
-    throw error;
-  }
-}
-
 module.exports = {
   uploadData: async function uploadData(data) {
     try {
@@ -63,9 +35,12 @@ module.exports = {
 
       let query = `UPDATE txn_header SET progress = ?, approver = ? WHERE txn_id = ?`;
       let params = ["PROCESSING", data.approver, data.txn_id];
-      await getOTHubData(query, params)
+      await queryDB
+        .getData(query, params)
         .then((results) => {
+          //console.log('Query results:', results);
           return results;
+          // Use the results in your variable or perform further operations
         })
         .catch((error) => {
           console.error("Error retrieving data:", error);
@@ -84,7 +59,7 @@ module.exports = {
       let environment;
       if (data.network === "otp:20430" || data.network === "gnosis:10200") {
         dkg = testnet_dkg;
-        environment = "testnet"
+        environment = "testnet";
       }
 
       if (
@@ -92,7 +67,7 @@ module.exports = {
         data.api_key === process.env.MASTER_KEY
       ) {
         dkg = mainnet_dkg;
-        environment = "mainnet"
+        environment = "mainnet";
       }
 
       let dkg_create_result = await dkg.asset
@@ -127,20 +102,23 @@ module.exports = {
           throw new Error(JSON.stringify(error_obj));
         });
 
-        query = `UPDATE txn_header SET progress = ?, ual = ?, state = ? WHERE txn_id = ?`;
-          params = [
-            "CREATED",
-            dkg_create_result.UAL,
-            dkg_create_result.publicAssertionId,
-            data.txn_id,
-          ];
-          await getOTHubData(query, params)
-            .then((results) => {
-              return results;
-            })
-            .catch((error) => {
-              console.error("Error retrieving data:", error);
-            });
+      query = `UPDATE txn_header SET progress = ?, ual = ?, state = ? WHERE txn_id = ?`;
+      params = [
+        "CREATED",
+        dkg_create_result.UAL,
+        dkg_create_result.publicAssertionId,
+        data.txn_id,
+      ];
+      await queryDB
+        .getData(query, params)
+        .then((results) => {
+          //console.log('Query results:', results);
+          return results;
+          // Use the results in your variable or perform further operations
+        })
+        .catch((error) => {
+          console.error("Error retrieving data:", error);
+        });
 
       console.log(
         `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Created UAL ${dkg_create_result.UAL}. Transfering to ${data.receiver}...`
@@ -167,13 +145,13 @@ module.exports = {
           );
 
           query = `UPDATE txn_header SET progress = ? WHERE txn_id = ?`;
-          params = [
-            "COMPLETE",
-            data.txn_id,
-          ];
-          await getOTHubData(query, params)
+          params = ["COMPLETE", data.txn_id];
+          await queryDB
+            .getData(query, params)
             .then((results) => {
+              //console.log('Query results:', results);
               return results;
+              // Use the results in your variable or perform further operations
             })
             .catch((error) => {
               console.error("Error retrieving data:", error);

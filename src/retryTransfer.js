@@ -1,14 +1,8 @@
 require("dotenv").config();
-const mysql = require("mysql");
+const queryTypes = require("../util/queryTypes");
+const queryDB = queryTypes.queryDB();
 const DKGClient = require("dkg.js");
 const handleErrors = require("./handleErrors.js");
-
-const othubdb_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.OTHUB_DB,
-});
 
 const OT_NODE_TESTNET_PORT = process.env.OT_NODE_TESTNET_PORT;
 const OT_NODE_MAINNET_PORT = process.env.OT_NODE_MAINNET_PORT;
@@ -32,37 +26,16 @@ const mainnet_dkg = new DKGClient(mainnet_node_options);
 
 const wallet_array = JSON.parse(process.env.WALLET_ARRAY);
 
-function executeOTHubQuery(query, params) {
-  return new Promise((resolve, reject) => {
-    othubdb_connection.query(query, params, (error, results) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(results);
-      }
-    });
-  });
-}
-
-async function getOTHubData(query, params) {
-  try {
-    const results = await executeOTHubQuery(query, params);
-    return results;
-  } catch (error) {
-    console.error("Error executing query:", error);
-    throw error;
-  }
-}
-
 module.exports = {
   retryTransfer: async function retryTransfer(data) {
     try {
       let query = `UPDATE txn_header SET progress = ? WHERE txn_id = ?`;
       let params = ["RETRYING-TRANSFER", data.txn_id];
-      await getOTHubData(query, params)
+      await queryDB
+        .getData(query, params)
         .then((results) => {
           //console.log('Query results:', results);
-          //return results;
+          return results;
           // Use the results in your variable or perform further operations
         })
         .catch((error) => {
@@ -81,7 +54,7 @@ module.exports = {
       let environment;
       if (data.network === "otp:20430" || data.network === "gnosis:10200") {
         dkg = testnet_dkg;
-        environment = "testnet"
+        environment = "testnet";
       }
 
       if (
@@ -89,7 +62,7 @@ module.exports = {
         data.api_key === process.env.MASTER_KEY
       ) {
         dkg = mainnet_dkg;
-        environment = "mainnet"
+        environment = "mainnet";
       }
 
       await dkg.asset
@@ -110,11 +83,17 @@ module.exports = {
           );
 
           query = `UPDATE txn_header SET progress = ? WHERE progress in(?,?) AND approver = ?`;
-          params = ["COMPLETE", "PROCESSING", "RETRYING-TRANSFER",wallet_array[index].public_key];
-          await getOTHubData(query, params)
+          params = [
+            "COMPLETE",
+            "PROCESSING",
+            "RETRYING-TRANSFER",
+            wallet_array[index].public_key,
+          ];
+          await queryDB
+            .getData(query, params)
             .then((results) => {
               //console.log('Query results:', results);
-              //return results;
+              return results;
               // Use the results in your variable or perform further operations
             })
             .catch((error) => {
