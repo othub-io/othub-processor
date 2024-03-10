@@ -47,7 +47,7 @@ module.exports = {
         });
 
       let dkg_txn_data = JSON.parse(data.txn_data);
-      if (!dkg_txn_data["@context"]) {
+      if (!dkg_txn_data.hasOwnProperty("@context")) {
         dkg_txn_data["@context"] = "https://schema.org";
       }
 
