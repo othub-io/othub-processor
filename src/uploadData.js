@@ -98,6 +98,7 @@ module.exports = {
             error: error.message,
             index: index,
             request: "Create-n-Transfer",
+            network: data.network
           };
           throw new Error(JSON.stringify(error_obj));
         });

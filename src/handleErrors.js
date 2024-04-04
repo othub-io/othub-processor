@@ -24,12 +24,13 @@ module.exports = {
             wallet_array[message.index].public_key
           }: Create failed. ${message.error} Abandoning...`
         );
-        query = `UPDATE txn_header SET progress = ?, txn_data = ? WHERE approver = ? AND request = 'Create-n-Transfer' AND progress = ?`;
+        query = `UPDATE txn_header SET progress = ?, txn_data = ? WHERE approver = ? AND request = 'Create-n-Transfer' AND progress = ? AND network = ?`;
         params = [
           "CREATE-ABANDONED",
           `{"data":"bad"}`,
           wallet_array[message.index].public_key,
           "PROCESSING",
+          message.network
         ];
         await queryDB
           .getData(query, params)
@@ -54,12 +55,13 @@ module.exports = {
         );
         await sleep(60000);
 
-        query = `UPDATE txn_header SET progress = ?, approver = ? WHERE approver = ? AND request = 'Create-n-Transfer' AND progress = ?`;
+        query = `UPDATE txn_header SET progress = ?, approver = ? WHERE approver = ? AND request = 'Create-n-Transfer' AND progress = ? AND network = ?`;
         params = [
           "PENDING",
           null,
           wallet_array[message.index].public_key,
           "PROCESSING",
+          message.network
         ];
         await queryDB
           .getData(query, params)
@@ -119,12 +121,13 @@ module.exports = {
           wallet_array[message.index].public_key
         }: Unexpected Error. ${message.error}. Abandoning...`
       );
-      query = `UPDATE txn_header SET progress = ?, txn_data = ? WHERE approver = ? AND request = 'Create-n-Transfer' AND progress = ?`;
+      query = `UPDATE txn_header SET progress = ?, txn_data = ? WHERE approver = ? AND request = 'Create-n-Transfer' AND progress = ?  AND network = ?`;
       params = [
         "CREATE-ABANDONED",
         `{"data":"bad"}`,
         wallet_array[message.index].public_key,
         "PROCESSING",
+        message.network
       ];
       await queryDB
         .getData(query, params)
