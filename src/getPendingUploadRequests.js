@@ -59,8 +59,8 @@ module.exports = {
             console.log(
               `${wallet.name} wallet ${wallet.public_key}: Processing for over 10 minutes. Rolling back to pending...`
             );
-            query = `UPDATE txn_header SET progress = ?, approver = ? WHERE approver = ? AND progress = ? AND request = 'Create-n-Transfer'`;
-            params = ["PENDING", null, wallet.public_key, "PROCESSING"];
+            query = `UPDATE txn_header SET progress = ?, approver = ? WHERE approver = ? AND progress = ? AND request = 'Create-n-Transfer' and network = ?`;
+            params = ["PENDING", null, wallet.public_key, "PROCESSING", blockchain.network];
             await queryDB
               .getData(query, params)
               .then((results) => {
@@ -82,12 +82,13 @@ module.exports = {
               console.log(
                 `${wallet.name} ${wallet.public_key}: Transfer attempt failed 3 times. Abandoning transfer...`
               );
-              query = `UPDATE txn_header SET progress = ? WHERE progress in (?,?) AND approver = ?`;
+              query = `UPDATE txn_header SET progress = ? WHERE progress in (?,?) AND approver = ? and network = ?`;
               params = [
                 "TRANSFER-ABANDONED",
                 "CREATED",
                 "RETRYING-TRANSFER",
                 wallet.public_key,
+                blockchain.network
               ];
               await queryDB
                 .getData(query, params)
