@@ -24,13 +24,13 @@ module.exports = {
             wallet_array[message.index].public_key
           }: Create failed. ${message.error} Abandoning...`
         );
-        query = `UPDATE txn_header SET progress = ?, txn_data = ? WHERE approver = ? AND request = 'Create-n-Transfer' AND progress = ? AND network = ?`;
+        query = `UPDATE txn_header SET progress = ?, txn_data = ? WHERE approver = ? AND request = 'Create-n-Transfer' AND progress = ? AND blockchain = ?`;
         params = [
           "CREATE-ABANDONED",
           `{"data":"bad"}`,
           wallet_array[message.index].public_key,
           "PROCESSING",
-          message.network
+          message.blockchain
         ];
         await queryDB
           .getData(query, params)
@@ -55,13 +55,13 @@ module.exports = {
         );
         await sleep(60000);
 
-        query = `UPDATE txn_header SET progress = ?, approver = ? WHERE approver = ? AND request = 'Create-n-Transfer' AND progress = ? AND network = ?`;
+        query = `UPDATE txn_header SET progress = ?, approver = ? WHERE approver = ? AND request = 'Create-n-Transfer' AND progress = ? AND blockchain = ?`;
         params = [
           "PENDING",
           null,
           wallet_array[message.index].public_key,
           "PROCESSING",
-          message.network
+          message.blockchain
         ];
         await queryDB
           .getData(query, params)
@@ -84,13 +84,13 @@ module.exports = {
         );
         await sleep(60000);
 
-        query = `INSERT INTO txn_header (txn_id, progress, approver, api_key, request, network, app_name, txn_description, txn_data, ual, keywords, state, txn_hash, txn_fee, trac_fee, epochs, receiver) VALUES (UUID(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+        query = `INSERT INTO txn_header (txn_id, progress, approver, key_id, request, blockchain, app_name, txn_description, txn_data, ual, keywords, state, txn_hash, txn_fee, trac_fee, epochs, receiver) VALUES (UUID(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
         params = [
           "TRANSFER-FAILED",
           wallet_array[message.index].public_key,
           null,
           "Create-n-Transfer",
-          message.network,
+          message.blockchain,
           null,
           null,
           null,
@@ -121,13 +121,13 @@ module.exports = {
           wallet_array[message.index].public_key
         }: Unexpected Error. ${message.error}. Abandoning...`
       );
-      query = `UPDATE txn_header SET progress = ?, txn_data = ? WHERE approver = ? AND request = 'Create-n-Transfer' AND progress = ?  AND network = ?`;
+      query = `UPDATE txn_header SET progress = ?, txn_data = ? WHERE approver = ? AND request = 'Create-n-Transfer' AND progress = ?  AND blockchain = ?`;
       params = [
         "CREATE-ABANDONED",
         `{"data":"bad"}`,
         wallet_array[message.index].public_key,
         "PROCESSING",
-        message.network
+        message.blockchain
       ];
       await queryDB
         .getData(query, params)
