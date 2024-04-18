@@ -47,18 +47,18 @@ module.exports = {
       );
 
       console.log(
-        `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Retrying transfer for UAL ${data.ual} on ${data.network}.`
+        `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Retrying transfer for UAL ${data.ual} on ${data.blockchain}.`
       );
 
       let dkg = testnet_dkg;
       let environment;
-      if (data.network === "otp:20430" || data.network === "gnosis:10200") {
+      if (data.blockchain === "otp:20430" || data.blockchain === "gnosis:10200") {
         dkg = testnet_dkg;
         environment = "testnet";
       }
 
       if (
-        (data.network === "otp:2043" || data.network === "gnosis:100") &&
+        (data.blockchain === "otp:2043" || data.blockchain === "gnosis:100") &&
         data.api_key === process.env.MASTER_KEY
       ) {
         dkg = mainnet_dkg;
@@ -72,7 +72,7 @@ module.exports = {
           frequency: 2,
           contentType: "all",
           blockchain: {
-            name: data.network,
+            name: data.blockchain,
             publicKey: wallet_array[index].public_key,
             privateKey: wallet_array[index].private_key,
           },
@@ -106,7 +106,7 @@ module.exports = {
             index: index,
             request: "Transfer",
             ual: data.ual,
-            network: data.network,
+            blockchain: data.blockchain,
             receiver: data.receiver,
           };
           throw new Error(JSON.stringify(error_obj));

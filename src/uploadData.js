@@ -46,24 +46,24 @@ module.exports = {
           console.error("Error retrieving data:", error);
         });
 
-      let dkg_txn_data = JSON.parse(data.txn_data);
+      let dkg_txn_data = JSON.parse(data.asset_data);
       if (!dkg_txn_data["@context"]) {
         dkg_txn_data["@context"] = "https://schema.org";
       }
 
       console.log(
-        `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Creating next asset on ${data.network}.`
+        `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Creating next asset on ${data.blockchain}.`
       );
 
       let dkg = testnet_dkg;
       let environment;
-      if (data.network === "otp:20430" || data.network === "gnosis:10200") {
+      if (data.blockchain === "otp:20430" || data.blockchain === "gnosis:10200") {
         dkg = testnet_dkg;
         environment = "testnet";
       }
 
       if (
-        (data.network === "otp:2043" || data.network === "gnosis:100") &&
+        (data.blockchain === "otp:2043" || data.blockchain === "gnosis:100") &&
         data.api_key === process.env.MASTER_KEY
       ) {
         dkg = mainnet_dkg;
@@ -83,7 +83,7 @@ module.exports = {
             contentType: "all",
             keywords: data.keywords,
             blockchain: {
-              name: data.network,
+              name: data.blockchain,
               publicKey: wallet_array[index].public_key,
               privateKey: wallet_array[index].private_key,
               handleNotMinedError: true,
@@ -98,7 +98,7 @@ module.exports = {
             error: error.message,
             index: index,
             request: "Create-n-Transfer",
-            network: data.network
+            blockchain: data.blockchain
           };
           throw new Error(JSON.stringify(error_obj));
         });
@@ -134,7 +134,7 @@ module.exports = {
           contentType: "all",
           keywords: data.keywords,
           blockchain: {
-            name: data.network,
+            name: data.blockchain,
             publicKey: wallet_array[index].public_key,
             privateKey: wallet_array[index].private_key,
             handleNotMinedError: true,
@@ -164,7 +164,7 @@ module.exports = {
             index: index,
             request: "Transfer",
             ual: dkg_create_result.UAL,
-            network: data.network,
+            blockchain: data.blockchain,
             receiver: data.receiver,
           };
           throw new Error(JSON.stringify(error_obj));
