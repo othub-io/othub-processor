@@ -8,14 +8,14 @@ const OT_NODE_TESTNET_PORT = process.env.OT_NODE_TESTNET_PORT;
 const OT_NODE_MAINNET_PORT = process.env.OT_NODE_MAINNET_PORT;
 
 const testnet_node_options = {
-  endpoint: process.env.OT_NODE_HOSTNAME,
+  endpoint: process.env.OT_NODE_TESTNET_HOSTNAME,
   port: OT_NODE_TESTNET_PORT,
   useSSL: true,
   maxNumberOfRetries: 100,
 };
 
 const mainnet_node_options = {
-  endpoint: process.env.OT_NODE_HOSTNAME,
+  endpoint: process.env.OT_NODE_MAINNET_HOSTNAME,
   port: OT_NODE_MAINNET_PORT,
   useSSL: true,
   maxNumberOfRetries: 100,

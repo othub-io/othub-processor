@@ -15,10 +15,10 @@ module.exports = {
     try {
       let query;
       let params;
-      console.log(message)
       if (
         message.error === "Safe mode validation error." ||
         message.error === "File format is corrupted, no n-quads are extracted." ||
+        message.error === `Invalid JSON-LD syntax; "@type" value must a string, an array of strings, an empty object, or a default object.` ||
         message.error.includes("undefined")
       ) {
         console.log(
