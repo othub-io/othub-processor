@@ -70,6 +70,32 @@ module.exports = {
         environment = "mainnet";
       }
 
+      const segments = data.paranet_ual.split(":");
+      const argsString =
+        segments.length === 3 ? segments[2] : segments[2] + segments[3];
+      const args = argsString.split("/");
+
+      if (args.length !== 3) {
+        error_obj = {
+          error: error.message,
+          index: index,
+          blockchain: data.blockchain,
+          paranet_ual: paranet_ual
+        };
+        throw new Error(JSON.stringify(error_obj));
+      }
+
+      let bchain = {
+        name: data.blockchain,
+        publicKey: wallet_array[index].public_key,
+        privateKey: wallet_array[index].private_key,
+        handleNotMinedError: true,
+      }
+
+      if(data.paranet_ual){
+        bchain.paranetUAL = data.paranet_ual
+      }
+
       let dkg_create_result = await dkg.asset
         .create(
           {
@@ -82,12 +108,7 @@ module.exports = {
             frequency: 2,
             contentType: "all",
             keywords: data.keywords,
-            blockchain: {
-              name: data.blockchain,
-              publicKey: wallet_array[index].public_key,
-              privateKey: wallet_array[index].private_key,
-              handleNotMinedError: true,
-            },
+            blockchain: bchain
           }
         )
         .then((result) => {

@@ -29,7 +29,7 @@ module.exports = {
 
         let available_wallets = [];
         for (const wallet of wallet_array) {
-          query = `select th.txn_id,th.progress,th.approver,th.blockchain,dh.asset_data,th.keywords,th.epochs,th.updated_at,th.created_at,th.receiver,th.ual from txn_header th join data_header dh on dh.data_id = th.data_id where th.request = 'Create-n-Transfer' AND th.approver = ? AND th.blockchain = ? order by th.updated_at desc LIMIT 5`;
+          query = `select th.txn_id,th.progress,th.approver,th.blockchain,dh.asset_data,th.keywords,th.epochs,th.updated_at,th.created_at,th.receiver,th.ual,th.paranet_ual from txn_header th join data_header dh on dh.data_id = th.data_id where th.request = 'Create-n-Transfer' AND th.approver = ? AND th.blockchain = ? order by th.updated_at desc LIMIT 5`;
           params = [wallet.public_key, blockchain.name];
           last_processed = await queryDB
             .getData(query, params)
