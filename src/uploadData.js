@@ -57,32 +57,34 @@ module.exports = {
 
       let dkg = testnet_dkg;
       let environment;
-      if (data.blockchain === "otp:20430" || data.blockchain === "gnosis:10200") {
+      if (data.blockchain === "otp:20430" || data.blockchain === "gnosis:10200" || data.blockchain === "base:84532") {
         dkg = testnet_dkg;
         environment = "testnet";
       }
 
       if (
-        (data.blockchain === "otp:2043" || data.blockchain === "gnosis:100") &&
+        (data.blockchain === "otp:2043" || data.blockchain === "gnosis:100" || data.blockchain === "base:8453") &&
         data.api_key === process.env.MASTER_KEY
       ) {
         dkg = mainnet_dkg;
         environment = "mainnet";
       }
 
-      const segments = data.paranet_ual.split(":");
-      const argsString =
-        segments.length === 3 ? segments[2] : segments[2] + segments[3];
-      const args = argsString.split("/");
+      if (data.paranet_ual) {
+        const segments = data.paranet_ual.split(":");
+        const argsString =
+          segments.length === 3 ? segments[2] : segments[2] + segments[3];
+        const args = argsString.split("/");
 
-      if (args.length !== 3) {
-        error_obj = {
-          error: error.message,
-          index: index,
-          blockchain: data.blockchain,
-          paranet_ual: paranet_ual
-        };
-        throw new Error(JSON.stringify(error_obj));
+        if (args.length !== 3) {
+          let error_obj = {
+            error: error.message,
+            index: index,
+            blockchain: data.blockchain,
+            paranet_ual: data.paranet_ual
+          };
+          throw new Error(JSON.stringify(error_obj));
+        }
       }
 
       let bchain = {
@@ -92,8 +94,22 @@ module.exports = {
         handleNotMinedError: true,
       }
 
+      let dkg_options = {
+        environment: environment,
+        epochsNum: data.epochs,
+        maxNumberOfRetries: 30,
+        frequency: 2,
+        contentType: "all",
+        keywords: data.keywords,
+        blockchain: bchain,
+      }
+
+      if(data.bid){
+        dkg_options.tokenAmount = data.bid
+      }
+
       if(data.paranet_ual){
-        bchain.paranetUAL = data.paranet_ual
+        dkg_options.blockchain.paranetUAL = data.paranet_ual
       }
 
       let dkg_create_result = await dkg.asset
@@ -101,15 +117,7 @@ module.exports = {
           {
             public: dkg_txn_data,
           },
-          {
-            environment: environment,
-            epochsNum: data.epochs,
-            maxNumberOfRetries: 30,
-            frequency: 2,
-            contentType: "all",
-            keywords: data.keywords,
-            blockchain: bchain
-          }
+          dkg_options
         )
         .then((result) => {
           return result;
@@ -147,20 +155,7 @@ module.exports = {
       );
 
       await dkg.asset
-        .transfer(dkg_create_result.UAL, data.receiver, {
-          environment: environment,
-          epochsNum: data.epochs,
-          maxNumberOfRetries: 30,
-          frequency: 2,
-          contentType: "all",
-          keywords: data.keywords,
-          blockchain: {
-            name: data.blockchain,
-            publicKey: wallet_array[index].public_key,
-            privateKey: wallet_array[index].private_key,
-            handleNotMinedError: true,
-          },
-        })
+        .transfer(dkg_create_result.UAL, data.receiver, dkg_options)
         .then(async (result) => {
           console.log(
             `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Transfered ${dkg_create_result.UAL} to ${data.receiver}.`

@@ -52,31 +52,46 @@ module.exports = {
 
       let dkg = testnet_dkg;
       let environment;
-      if (data.blockchain === "otp:20430" || data.blockchain === "gnosis:10200") {
+      if (data.blockchain === "otp:20430" || data.blockchain === "gnosis:10200" || data.blockchain === "base:84532") {
         dkg = testnet_dkg;
         environment = "testnet";
       }
 
       if (
-        (data.blockchain === "otp:2043" || data.blockchain === "gnosis:100") &&
+        (data.blockchain === "otp:2043" || data.blockchain === "gnosis:100" || data.blockchain === "base:8453") &&
         data.api_key === process.env.MASTER_KEY
       ) {
         dkg = mainnet_dkg;
         environment = "mainnet";
       }
 
+      let bchain = {
+        name: data.blockchain,
+        publicKey: wallet_array[index].public_key,
+        privateKey: wallet_array[index].private_key,
+        handleNotMinedError: true,
+      }
+
+      let dkg_options = {
+        environment: environment,
+        epochsNum: data.epochs,
+        maxNumberOfRetries: 30,
+        frequency: 2,
+        contentType: "all",
+        keywords: data.keywords,
+        blockchain: bchain,
+      }
+
+      if(data.bid){
+        dkg_options.tokenAmount = data.bid
+      }
+
+      if(data.paranet_ual){
+        dkg_options.bchain.paranetUAL = data.paranet_ual
+      }
+
       await dkg.asset
-        .transfer(data.ual, data.receiver, {
-          environment: environment,
-          maxNumberOfRetries: 30,
-          frequency: 2,
-          contentType: "all",
-          blockchain: {
-            name: data.blockchain,
-            publicKey: wallet_array[index].public_key,
-            privateKey: wallet_array[index].private_key,
-          },
-        })
+        .transfer(data.ual, data.receiver, dkg_options)
         .then(async (result) => {
           console.log(
             `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Transfered ${data.ual} to ${data.receiver}.`
