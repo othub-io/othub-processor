@@ -109,7 +109,7 @@ module.exports = {
       }
 
       if(data.paranet_ual){
-        dkg_options.blockchain.paranetUAL = data.paranet_ual
+        dkg_options.paranetUAL = data.paranet_ual
       }
 
       let dkg_create_result = await dkg.asset
