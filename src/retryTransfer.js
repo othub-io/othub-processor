@@ -97,10 +97,11 @@ module.exports = {
             `${wallet_array[index].name} wallet ${wallet_array[index].public_key}: Transfered ${data.ual} to ${data.receiver}.`
           );
 
-          query = `UPDATE txn_header SET progress = ? WHERE progress in(?,?) AND approver = ?`;
+          query = `UPDATE txn_header SET progress = ? WHERE progress in(?,?,?) AND approver = ?`;
           params = [
             "COMPLETE",
             "PROCESSING",
+            "CREATED",
             "RETRYING-TRANSFER",
             wallet_array[index].public_key,
           ];
