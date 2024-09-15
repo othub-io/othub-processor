@@ -15,14 +15,14 @@ module.exports = {
     try {
       let query;
       let params;
-      console.log(message)
       if (
         message.error === "Safe mode validation error." ||
         message.error === "File format is corrupted, no n-quads are extracted." ||
+        message.error === `Invalid JSON-LD syntax; "@type" value must a string, an array of strings, an empty object, or a default object.` ||
         message.error.includes("undefined")
       ) {
         console.log(
-          `${wallet_array[message.index].name} wallet ${
+          `${wallet_array[message.index].name} wallet ${message.blockchain}:${
             wallet_array[message.index].public_key
           }: Create failed. ${message.error} Abandoning...`
         );
@@ -49,7 +49,7 @@ module.exports = {
 
       if (message.request === "Create-n-Transfer") {
         console.log(
-          `${wallet_array[message.index].name} wallet ${
+          `${wallet_array[message.index].name} wallet ${message.blockchain}:${
             wallet_array[message.index].public_key
           }: Create failed. ${
             message.error
@@ -80,7 +80,7 @@ module.exports = {
 
       if (message.request === "Transfer") {
         console.log(
-          `${wallet_array[message.index].name} wallet ${
+          `${wallet_array[message.index].name} wallet ${message.blockchain}:${
             wallet_array[message.index].public_key
           }: Transfer failed. ${message.error}. Retrying in 1 minute...`
         );
@@ -119,7 +119,7 @@ module.exports = {
       }
 
       console.log(
-        `${wallet_array[message.index].name} wallet ${
+        `${wallet_array[message.index].name} wallet ${message.blockchain}:${
           wallet_array[message.index].public_key
         }: Unexpected Error. ${message.error}. Abandoning...`
       );
